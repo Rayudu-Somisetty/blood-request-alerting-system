@@ -145,10 +145,6 @@ Initialize the database with sample data:
 
 ## 📱 Usage
 
-### Default Admin Account
-- **Email**: admin@bloodalert.com
-- **Password**: admin123
-
 ### User Registration
 1. Click "Register" on the homepage
 2. Fill in personal and medical information
