@@ -28,7 +28,9 @@
 firebase-debug.log
 firebase-debug.*.log
 
-# Logs
+# Firebase config backups with credentials
+src/firebase/config_backup.js
+src/firebase/config_new.js
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

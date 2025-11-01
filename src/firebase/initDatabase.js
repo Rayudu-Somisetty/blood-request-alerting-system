@@ -3,15 +3,15 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, addDoc, doc, setDoc, writeBatch } from 'firebase/firestore';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 
-// Your Firebase config (replace with actual values)
+// Your Firebase config (loaded from environment variables)
 const firebaseConfig = {
-  apiKey: "AIzaSyArJH2CV_Llg8jEYy3s1ruhSzyuLbNOjuk",
-  authDomain: "blood-alert-4912.firebaseapp.com",
-  projectId: "blood-alert-4912",
-  storageBucket: "blood-alert-4912.firebasestorage.app",
-  messagingSenderId: "1057362162762",
-  appId: "1:1057362162762:web:246cb590201b1727a322b3",
-  measurementId: "G-FNRHEMH4TX"
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase
