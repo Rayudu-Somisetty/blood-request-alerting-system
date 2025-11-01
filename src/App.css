@@ -1,38 +1,84 @@
-.App {
-  text-align: center;
+/* Custom styles for the blood bank website */
+
+/* General styles */
+body {
+  font-family: 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+/* Hero section */
+.hero-section {
+  min-height: 80vh;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
 }
 
-.App-link {
-  color: #61dafb;
+/* Quick links cards */
+.hover-card {
+  transition: transform 0.3s ease;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+.hover-card:hover {
+  transform: translateY(-5px);
+}
+
+/* Live stats section */
+.live-stats .display-4 {
+  font-size: 3rem;
+}
+
+/* Blood inventory */
+.blood-inventory .progress {
+  height: 25px;
+}
+
+.blood-inventory .progress-bar {
+  transition: width 0.6s ease;
+}
+
+/* Features section */
+.features .card {
+  transition: box-shadow 0.3s ease;
+}
+
+.features .card:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Footer */
+footer a {
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+footer a:hover {
+  color: #dc3545 !important;
+}
+
+.social-links a {
+  font-size: 1.5rem;
+  margin-right: 1rem;
+}
+
+/* Accessibility improvements */
+.btn {
+  font-size: 1.1rem;
+  padding: 0.5rem 1.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .hero-section {
+    text-align: center;
+    padding: 2rem 0;
   }
-  to {
-    transform: rotate(360deg);
+  
+  .live-stats .display-4 {
+    font-size: 2.5rem;
+  }
+  
+  .blood-inventory .progress {
+    height: 20px;
   }
 }

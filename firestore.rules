@@ -1,0 +1,86 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isOwnerOrAdmin(userId) {
+      return isOwner(userId) || isAdmin();
+    }
+
+    // Users collection
+    match /users/{userId} {
+      // Users can read and update their own data, admins can read/write all users
+      allow read: if isOwnerOrAdmin(userId);
+      allow write: if isOwnerOrAdmin(userId);
+      // Allow creation during registration
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Donations collection
+    match /donations/{donationId} {
+      // Users can create their own donations, read their own and admin donations
+      allow create: if isAuthenticated();
+      allow read: if isAuthenticated();
+      // Users can update their own donations, admins can update any
+      allow update: if isAuthenticated() && 
+                       (resource.data.donorId == request.auth.uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // Blood requests collection
+    match /bloodRequests/{requestId} {
+      // Anyone can create blood requests (emergency situations)
+      allow create: if true;
+      // Authenticated users can read all requests
+      allow read: if isAuthenticated();
+      // Admins and request creators can update
+      allow update: if isAuthenticated();
+      allow delete: if isAdmin();
+    }
+
+    // Blood campaigns collection
+    match /bloodCampaigns/{campaignId} {
+      // Anyone can read campaigns
+      allow read: if true;
+      // Only admins can create, update, delete campaigns
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Notifications collection
+    match /notifications/{notificationId} {
+      // Users can read their own notifications and global notifications
+      allow read: if isAuthenticated() && 
+                     (resource.data.userId == request.auth.uid || 
+                      resource.data.isGlobal == true || 
+                      isAdmin());
+      // Anyone can create notifications (for blood requests)
+      allow create: if true;
+      // Users can update their own notifications (mark as read)
+      allow update: if isAuthenticated() && 
+                       (resource.data.userId == request.auth.uid || isAdmin());
+      // Only admins can delete notifications
+      allow delete: if isAdmin();
+    }
+
+    // For development and testing - remove in production
+    // Allow read access to all collections for debugging
+    match /{document=**} {
+      allow read: if isAuthenticated();
+    }
+  }
+}

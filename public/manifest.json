@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Blood Alert",
+  "name": "Blood Alert - Blood Requirement Request Alerting System",
   "icons": [
     {
       "src": "favicon.ico",

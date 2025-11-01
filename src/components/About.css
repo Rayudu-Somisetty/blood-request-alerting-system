@@ -1,0 +1,129 @@
+.about-section {
+    background-color: #f8f9fa;
+    position: relative;
+    overflow: hidden;
+}
+
+.section-title {
+    color: #2c3e50;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    font-size: 2.5rem;
+}
+
+.section-title .highlight {
+    color: #dc3545;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.section-title .subtitle {
+    font-size: 1.5rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.about-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.highlight-text {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.certification {
+    background: #dc3545;
+    color: white;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.lead {
+    font-size: 1.25rem;
+    font-weight: 400;
+    line-height: 1.8;
+    color: #2c3e50;
+}
+
+.feature-section {
+    margin-bottom: 3rem;
+    padding: 2rem;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.7);
+    transition: transform 0.3s ease;
+}
+
+.feature-section:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(220, 53, 69, 0.1);
+}
+
+.feature-title {
+    color: #dc3545;
+    font-size: 1.5rem;
+    margin-bottom: 1.2rem;
+    font-weight: 600;
+    position: relative;
+    padding-bottom: 0.5rem;
+}
+
+.feature-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background: #dc3545;
+    border-radius: 2px;
+}
+
+.service-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.service-list li {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.service-list li::before {
+    content: '•';
+    color: #dc3545;
+    font-size: 1.5rem;
+    position: absolute;
+    left: 0;
+    top: -0.2rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .section-title {
+        font-size: 2rem;
+    }
+    
+    .section-title .subtitle {
+        font-size: 1.25rem;
+    }
+    
+    .lead {
+        font-size: 1.1rem;
+    }
+
+    .feature-section {
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .feature-title {
+        font-size: 1.3rem;
+    }
+}

@@ -1,0 +1,63 @@
+.donate-blood-requests-section {
+  min-height: 80vh;
+  background: linear-gradient(to bottom, #f8f9fa, #ffffff);
+}
+
+.section-title {
+  color: #2c3e50;
+  font-weight: bold;
+}
+
+.section-title .highlight {
+  color: #dc3545;
+}
+
+.section-title .subtitle {
+  font-size: 1rem;
+  color: #6c757d;
+  font-weight: normal;
+  margin-top: 0.5rem;
+}
+
+.blood-request-card {
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: none;
+}
+
+.blood-request-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1) !important;
+}
+
+.blood-request-card .card-header {
+  font-size: 1.1rem;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.blood-request-card .card-body {
+  background-color: #fff;
+}
+
+/* Urgency badges */
+.badge {
+  font-size: 0.75rem;
+  padding: 0.4rem 0.8rem;
+}
+
+/* Filter section */
+.filter-section {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .section-title {
+    font-size: 1.5rem;
+  }
+  
+  .section-title .subtitle {
+    font-size: 0.9rem;
+  }
+}

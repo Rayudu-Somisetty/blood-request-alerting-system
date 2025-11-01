@@ -1,0 +1,120 @@
+.donate-section {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+.section-title {
+    color: #2c3e50;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    font-size: 2.5rem;
+}
+
+.section-title .highlight {
+    color: #dc3545;
+}
+
+.section-title .subtitle {
+    font-size: 1.5rem;
+    color: #6c757d;
+    font-weight: 500;
+    margin-top: 0.5rem;
+}
+
+.donation-form-card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    background: white;
+}
+
+.donation-form-card .card-body {
+    padding: 3rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.form-control, .form-select {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.age-slider {
+    margin: 1rem 0;
+}
+
+.age-slider::-webkit-slider-thumb {
+    background: #dc3545;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.age-slider::-moz-range-thumb {
+    background: #dc3545;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.age-display {
+    text-align: center;
+    margin-top: 0.5rem;
+}
+
+.age-value {
+    background: #dc3545;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.donate-btn {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    border: none;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+}
+
+.donate-btn:hover {
+    background: linear-gradient(135deg, #c82333, #a71e2a);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+}
+
+.form-text {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .donation-form-card .card-body {
+        padding: 2rem 1.5rem;
+    }
+    
+    .section-title {
+        font-size: 2rem;
+    }
+    
+    .section-title .subtitle {
+        font-size: 1.25rem;
+    }
+}

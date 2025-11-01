@@ -1,0 +1,79 @@
+.notifications-list {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.notification-card {
+  transition: all 0.3s ease;
+  border-left: 4px solid #dc3545;
+}
+
+.notification-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(220, 53, 69, 0.15);
+}
+
+.urgent-notification {
+  border-left-color: #ffc107;
+  background-color: #fff8e1;
+}
+
+.critical-notification {
+  border-left-color: #dc3545;
+  background-color: #ffebee;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+  }
+}
+
+.response-buttons {
+  gap: 8px;
+}
+
+.response-buttons .btn {
+  border-radius: 20px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.response-buttons .btn:hover {
+  transform: translateY(-1px);
+}
+
+.compatibility-badge {
+  background: linear-gradient(45deg, #28a745, #20c997);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.exact-match-badge {
+  background: linear-gradient(45deg, #dc3545, #e83e8c);
+}
+
+.blood-type-display {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #dc3545;
+}
+
+.urgency-critical {
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.5; }
+}
