@@ -16,6 +16,7 @@ const Users = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [editFormData, setEditFormData] = useState({
     firstName: '',
@@ -480,7 +481,8 @@ const Users = () => {
                                 className="btn btn-sm btn-outline-primary" 
                                 title="View Details"
                                 onClick={() => {
-                                  toast.info('View details feature coming soon');
+                                  setSelectedUser(user);
+                                  setShowViewModal(true);
                                 }}
                               >
                                 <i className="bi bi-eye"></i>
@@ -768,8 +770,100 @@ const Users = () => {
           </Modal.Footer>
         </Form>
       </Modal>
+
+      {/* View User Details Modal */}
+      <Modal show={showViewModal} onHide={() => setShowViewModal(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>User Details</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedUser && (
+            <div className="row">
+              <div className="col-md-6 mb-3">
+                <h6 className="text-muted mb-1">Full Name</h6>
+                <p className="mb-0 fw-semibold">{selectedUser.name}</p>
+              </div>
+              <div className="col-md-6 mb-3">
+                <h6 className="text-muted mb-1">Email</h6>
+                <p className="mb-0">{selectedUser.email}</p>
+              </div>
+              <div className="col-md-6 mb-3">
+                <h6 className="text-muted mb-1">Phone</h6>
+                <p className="mb-0">
+                  <a href={`tel:${selectedUser.phone}`} className="text-decoration-none">
+                    <i className="bi bi-telephone me-2"></i>
+                    {selectedUser.phone}
+                  </a>
+                </p>
+              </div>
+              <div className="col-md-6 mb-3">
+                <h6 className="text-muted mb-1">Blood Group</h6>
+                <p className="mb-0">
+                  <span className="badge bg-danger fs-6">{selectedUser.bloodGroup}</span>
+                </p>
+              </div>
+              <div className="col-md-6 mb-3">
+                <h6 className="text-muted mb-1">Location</h6>
+                <p className="mb-0">{selectedUser.location}</p>
+              </div>
+              <div className="col-md-6 mb-3">
+                <h6 className="text-muted mb-1">Status</h6>
+                <p className="mb-0">
+                  <span className={`badge ${getStatusBadgeClass(selectedUser.status)}`}>
+                    {selectedUser.status}
+                  </span>
+                </p>
+              </div>
+              <div className="col-md-6 mb-3">
+                <h6 className="text-muted mb-1">Total Donations</h6>
+                <p className="mb-0 fw-semibold">{selectedUser.totalDonations} times</p>
+              </div>
+              <div className="col-md-6 mb-3">
+                <h6 className="text-muted mb-1">Last Donation</h6>
+                <p className="mb-0">{selectedUser.lastDonation || 'No donations yet'}</p>
+              </div>
+              <div className="col-md-12 mb-3">
+                <h6 className="text-muted mb-1">User Type</h6>
+                <p className="mb-0 text-capitalize">{selectedUser.userType}</p>
+              </div>
+              {selectedUser.createdAt && (
+                <div className="col-md-12 mb-3">
+                  <h6 className="text-muted mb-1">Member Since</h6>
+                  <p className="mb-0">{new Date(selectedUser.createdAt).toLocaleDateString()}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowViewModal(false)}>
+            Close
+          </Button>
+          <Button 
+            variant="primary" 
+            onClick={() => {
+              setShowViewModal(false);
+              handleEditUser(selectedUser);
+            }}
+          >
+            <i className="bi bi-pencil me-2"></i>
+            Edit User
+          </Button>
+          <Button 
+            variant="danger" 
+            onClick={() => {
+              setShowViewModal(false);
+              handleDeleteUser(selectedUser);
+            }}
+          >
+            <i className="bi bi-trash me-2"></i>
+            Delete User
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };
 
 export default Users;
+

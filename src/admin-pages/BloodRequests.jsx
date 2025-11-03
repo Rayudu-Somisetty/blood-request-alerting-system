@@ -165,6 +165,55 @@ const BloodRequests = () => {
     }
   };
 
+  // Reject request
+  const handleRejectRequest = async (request) => {
+    if (window.confirm(`Are you sure you want to reject this blood request for ${request.patientName}?`)) {
+      try {
+        await firebaseService.updateBloodRequest(request.id, {
+          status: 'rejected',
+          rejectedAt: new Date().toISOString()
+        });
+        toast.success('Request rejected successfully');
+        fetchRequestsData();
+      } catch (error) {
+        console.error('Error rejecting request:', error);
+        toast.error('Failed to reject request');
+      }
+    }
+  };
+
+  // Delete old requests (1 week old)
+  const deleteOldRequests = async () => {
+    try {
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      
+      const oldRequests = requests.filter(request => {
+        const createdDate = new Date(request.createdAt);
+        return createdDate < oneWeekAgo && (request.status === 'completed' || request.status === 'rejected');
+      });
+
+      for (const request of oldRequests) {
+        await firebaseService.deleteBloodRequest(request.id);
+      }
+
+      if (oldRequests.length > 0) {
+        toast.success(`Deleted ${oldRequests.length} old request(s)`);
+        fetchRequestsData();
+      }
+    } catch (error) {
+      console.error('Error deleting old requests:', error);
+      toast.error('Failed to delete old requests');
+    }
+  };
+
+  // Check for old requests on component mount
+  useEffect(() => {
+    if (!loading && requests.length > 0) {
+      deleteOldRequests();
+    }
+  }, [loading]);
+
   const handleAction = (requestId, action) => {
     setRequests(requests.map(req => 
       req.id === requestId 
@@ -360,13 +409,22 @@ const BloodRequests = () => {
                       <div className="col-md-3">
                         <div className="d-flex gap-2 justify-content-end flex-wrap">
                           {request.status === 'active' && (
-                            <button 
-                              className="btn btn-success btn-sm"
-                              onClick={() => handleFulfillRequest(request.id)}
-                            >
-                              <i className="bi bi-check-circle me-1"></i>
-                              Fulfill
-                            </button>
+                            <>
+                              <button 
+                                className="btn btn-success btn-sm"
+                                onClick={() => handleFulfillRequest(request.id)}
+                              >
+                                <i className="bi bi-check-circle me-1"></i>
+                                Fulfill
+                              </button>
+                              <button 
+                                className="btn btn-danger btn-sm"
+                                onClick={() => handleRejectRequest(request)}
+                              >
+                                <i className="bi bi-x-circle me-1"></i>
+                                Reject
+                              </button>
+                            </>
                           )}
                           <button 
                             className="btn btn-outline-primary btn-sm"
