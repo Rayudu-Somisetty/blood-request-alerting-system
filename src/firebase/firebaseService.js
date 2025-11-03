@@ -911,7 +911,8 @@ class FirebaseService {
       case 'auth/too-many-requests':
         return 'Too many login attempts. Please try again later.';
       case 'permission-denied':
-        return 'You do not have permission to perform this action.';
+      case 'firestore/permission-denied':
+        return 'Database permission error. Please contact support.';
       default:
         return error.message || 'An unexpected error occurred.';
     }
