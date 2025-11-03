@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import RealTimeNotifications from '../admin-components/notifications/RealTimeNotifications';
 import firebaseService from '../firebase/firebaseService';
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalDonations: 0,
@@ -277,11 +279,17 @@ const Dashboard = () => {
                     There are <strong>{stats.emergencyRequests} urgent blood requests</strong> that require immediate attention.
                   </p>
                   <div className="d-flex gap-2">
-                    <button className="btn btn-danger btn-sm">
+                    <button 
+                      className="btn btn-danger btn-sm"
+                      onClick={() => navigate('/admin/blood-requests')}
+                    >
                       <i className="bi bi-eye me-1"></i>
                       View Emergency Requests
                     </button>
-                    <button className="btn btn-outline-danger btn-sm">
+                    <button 
+                      className="btn btn-outline-danger btn-sm"
+                      onClick={() => navigate('/admin/notifications')}
+                    >
                       <i className="bi bi-telephone me-1"></i>
                       Alert Blood Banks
                     </button>
@@ -346,11 +354,17 @@ const Dashboard = () => {
                           <td className="text-muted">{request.requestedBy}</td>
                           <td>
                             <div className="d-flex gap-1">
-                              <button className="btn btn-success btn-sm">
+                              <button 
+                                className="btn btn-success btn-sm"
+                                onClick={() => navigate(`/admin/blood-requests`)}
+                              >
                                 <i className="bi bi-check-circle me-1"></i>
                                 Fulfill
                               </button>
-                              <button className="btn btn-outline-primary btn-sm">
+                              <button 
+                                className="btn btn-outline-primary btn-sm"
+                                onClick={() => navigate(`/admin/blood-requests`)}
+                              >
                                 <i className="bi bi-eye me-1"></i>
                                 Details
                               </button>
@@ -443,19 +457,31 @@ const Dashboard = () => {
             </div>
             <div className="card-body">
               <div className="d-grid gap-2">
-                <button className="btn btn-red">
+                <button 
+                  className="btn btn-red"
+                  onClick={() => navigate('/admin/blood-requests')}
+                >
                   <i className="bi bi-exclamation-triangle me-2"></i>
                   Emergency Request
                 </button>
-                <button className="btn btn-outline-red">
+                <button 
+                  className="btn btn-outline-red"
+                  onClick={() => navigate('/admin/users')}
+                >
                   <i className="bi bi-person-plus me-2"></i>
                   Add New User
                 </button>
-                <button className="btn btn-outline-red">
+                <button 
+                  className="btn btn-outline-red"
+                  onClick={() => navigate('/admin/donations')}
+                >
                   <i className="bi bi-heart me-2"></i>
                   Record Donation
                 </button>
-                <button className="btn btn-outline-red">
+                <button 
+                  className="btn btn-outline-red"
+                  onClick={() => navigate('/admin/inventory')}
+                >
                   <i className="bi bi-file-earmark-text me-2"></i>
                   Generate Report
                 </button>

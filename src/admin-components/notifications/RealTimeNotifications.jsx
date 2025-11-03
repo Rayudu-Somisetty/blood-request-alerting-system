@@ -167,19 +167,14 @@ const RealTimeNotifications = () => {
           <p className="text-muted">Real-time blood requests and donation offers from your main website</p>
         </div>
         <div className="col-auto">
-          <div className="d-flex gap-2 align-items-center">
-            <span className={`badge ${isConnected ? 'bg-success' : 'bg-danger'}`}>
-              {isConnected ? '🟢 Connected' : '🔴 Disconnected'}
-            </span>
-            {notifications.length > 0 && (
-              <button 
-                className="btn btn-outline-secondary btn-sm"
-                onClick={clearNotifications}
-              >
-                Clear All
-              </button>
-            )}
-          </div>
+          {notifications.length > 0 && (
+            <button 
+              className="btn btn-outline-secondary btn-sm"
+              onClick={clearNotifications}
+            >
+              Clear All
+            </button>
+          )}
         </div>
       </div>
 
