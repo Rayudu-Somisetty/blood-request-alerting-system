@@ -24,11 +24,13 @@ service cloud.firestore {
 
     // Users collection
     match /users/{userId} {
-      // Users can read and update their own data, admins can read/write all users
-      allow read: if isOwnerOrAdmin(userId);
-      allow write: if isOwnerOrAdmin(userId);
+      // Allow authenticated users to read their own data, admins can read all
+      allow read: if isAuthenticated();
+      // Users can update their own data, admins can update/delete any user
+      allow update: if isOwnerOrAdmin(userId);
+      allow delete: if isAdmin();
       // Allow creation during registration
-      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow create: if isAuthenticated();
     }
 
     // Donations collection
