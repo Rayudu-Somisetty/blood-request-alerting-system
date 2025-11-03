@@ -30,30 +30,6 @@ export const initializeAdmins = async () => {
         canModifyData: true,
         canAddAdmins: true
       }
-    },
-    {
-      email: 'admin@gimsr.edu.in',
-      password: 'admin123',
-      userData: {
-        firstName: 'GIMSR',
-        lastName: 'Admin',
-        phone: '+91-9876543211',
-        dateOfBirth: '1992-01-01',
-        gender: 'male',
-        bloodGroup: 'A+',
-        address: 'GIMSR Blood Bank, Visakhapatnam',
-        city: 'Visakhapatnam',
-        state: 'Andhra Pradesh',
-        pincode: '530045',
-        role: 'admin',
-        userType: 'staff',
-        department: 'Blood Bank',
-        isActive: true,
-        isVerified: true,
-        adminType: 'admin',
-        canModifyData: true,
-        canAddAdmins: true
-      }
     }
   ];
 

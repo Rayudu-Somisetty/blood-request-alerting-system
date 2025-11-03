@@ -63,9 +63,6 @@ const UserDashboard = () => {
                       </div>
                       <div className="col-md-6">
                         <p className="mb-2">
-                          <strong>Weight:</strong> {formatValue(user?.weight, 'kg')}
-                        </p>
-                        <p className="mb-2">
                           <strong>Last Donation:</strong> {formatValue(user?.lastDonation)}
                         </p>
                         <p className="mb-2">

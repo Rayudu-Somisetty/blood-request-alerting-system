@@ -223,8 +223,6 @@ const Register = () => {
         birthYear: data.birthYear,
         gender: data.gender,
         bloodGroup: data.bloodGroup,
-        weight: data.weight,
-        height: data.height,
         address: data.address,
         city: data.city,
         state: data.state,
@@ -462,50 +460,6 @@ const Register = () => {
                       </Form.Select>
                       <Form.Control.Feedback type="invalid">
                         {errors.bloodGroup?.message}
-                      </Form.Control.Feedback>
-                    </Col>
-
-                    {/* Weight */}
-                    <Col md={6} className="mb-3">
-                      <Form.Label className="fw-semibold">
-                        Weight (kg) <span className="text-danger">*</span>
-                      </Form.Label>
-                      <Form.Control
-                        type="number"
-                        min="30"
-                        max="300"
-                        placeholder="e.g., 70"
-                        {...register('weight', {
-                          required: 'Weight is required',
-                          min: { value: 30, message: 'Weight must be at least 30 kg' },
-                          max: { value: 300, message: 'Weight must be less than 300 kg' }
-                        })}
-                        isInvalid={!!errors.weight}
-                      />
-                      <Form.Control.Feedback type="invalid">
-                        {errors.weight?.message}
-                      </Form.Control.Feedback>
-                    </Col>
-
-                    {/* Height */}
-                    <Col md={6} className="mb-3">
-                      <Form.Label className="fw-semibold">
-                        Height (cm) <span className="text-danger">*</span>
-                      </Form.Label>
-                      <Form.Control
-                        type="number"
-                        min="100"
-                        max="250"
-                        placeholder="e.g., 175"
-                        {...register('height', {
-                          required: 'Height is required',
-                          min: { value: 100, message: 'Height must be at least 100 cm' },
-                          max: { value: 250, message: 'Height must be less than 250 cm' }
-                        })}
-                        isInvalid={!!errors.height}
-                      />
-                      <Form.Control.Feedback type="invalid">
-                        {errors.height?.message}
                       </Form.Control.Feedback>
                     </Col>
 

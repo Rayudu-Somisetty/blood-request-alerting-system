@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import firebaseService from '../firebase/firebaseService';
+import { Modal, Button, Form, Badge } from 'react-bootstrap';
+import { toast } from 'react-toastify';
 
 const BloodRequests = () => {
   const [requests, setRequests] = useState([]);
@@ -10,6 +12,13 @@ const BloodRequests = () => {
     critical: 0,
     fulfilled: 0
   });
+  
+  // Modal states
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [newStatus, setNewStatus] = useState('');
+  const [statusNotes, setStatusNotes] = useState('');
 
   useEffect(() => {
     fetchRequestsData();
@@ -105,6 +114,55 @@ const BloodRequests = () => {
     const required = new Date(timeRequired);
     const hoursLeft = (required - now) / (1000 * 60 * 60);
     return hoursLeft <= 24;
+  };
+
+  // Handle view details
+  const handleViewDetails = (request) => {
+    setSelectedRequest(request);
+    setShowDetailsModal(true);
+  };
+
+  // Handle status change
+  const handleStatusChange = (request) => {
+    setSelectedRequest(request);
+    setNewStatus(request.status || 'active');
+    setStatusNotes('');
+    setShowStatusModal(true);
+  };
+
+  // Update request status
+  const handleUpdateStatus = async () => {
+    try {
+      const updateData = {
+        status: newStatus,
+        updatedAt: new Date().toISOString(),
+        ...(statusNotes && { statusNotes: statusNotes })
+      };
+
+      await firebaseService.updateBloodRequest(selectedRequest.id, updateData);
+      toast.success('Request status updated successfully');
+      setShowStatusModal(false);
+      fetchRequestsData(); // Refresh data
+    } catch (error) {
+      console.error('Error updating request status:', error);
+      toast.error('Failed to update request status');
+    }
+  };
+
+  // Fulfill request
+  const handleFulfillRequest = async (requestId) => {
+    try {
+      await firebaseService.updateBloodRequest(requestId, {
+        status: 'completed',
+        fulfilled: true,
+        fulfilledAt: new Date().toISOString()
+      });
+      toast.success('Request marked as fulfilled');
+      fetchRequestsData();
+    } catch (error) {
+      console.error('Error fulfilling request:', error);
+      toast.error('Failed to fulfill request');
+    }
   };
 
   const handleAction = (requestId, action) => {
@@ -300,30 +358,29 @@ const BloodRequests = () => {
                       </div>
                       
                       <div className="col-md-3">
-                        <div className="d-flex gap-2 justify-content-end">
-                          <button 
-                            className="btn btn-success btn-sm"
-                            onClick={() => handleAction(request.id, 'fulfilled')}
-                            disabled={request.status !== 'pending'}
-                          >
-                            <i className="bi bi-check-circle me-1"></i>
-                            Fulfill
-                          </button>
+                        <div className="d-flex gap-2 justify-content-end flex-wrap">
+                          {request.status === 'active' && (
+                            <button 
+                              className="btn btn-success btn-sm"
+                              onClick={() => handleFulfillRequest(request.id)}
+                            >
+                              <i className="bi bi-check-circle me-1"></i>
+                              Fulfill
+                            </button>
+                          )}
                           <button 
                             className="btn btn-outline-primary btn-sm"
-                            data-bs-toggle="modal"
-                            data-bs-target={`#detailsModal${request.id}`}
+                            onClick={() => handleViewDetails(request)}
                           >
                             <i className="bi bi-eye me-1"></i>
                             Details
                           </button>
                           <button 
-                            className="btn btn-outline-danger btn-sm"
-                            onClick={() => handleAction(request.id, 'rejected')}
-                            disabled={request.status !== 'pending'}
+                            className="btn btn-outline-secondary btn-sm"
+                            onClick={() => handleStatusChange(request)}
                           >
-                            <i className="bi bi-x-circle me-1"></i>
-                            Reject
+                            <i className="bi bi-pencil me-1"></i>
+                            Status
                           </button>
                         </div>
                       </div>
@@ -447,6 +504,140 @@ const BloodRequests = () => {
           </div>
         </div>
       </div>
+
+      {/* Details Modal */}
+      <Modal show={showDetailsModal} onHide={() => setShowDetailsModal(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Blood Request Details</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedRequest && (
+            <div className="row">
+              <div className="col-md-6 mb-3">
+                <h6 className="text-muted mb-1">Patient Name</h6>
+                <p className="mb-0 fw-semibold">{selectedRequest.patientName}</p>
+              </div>
+              <div className="col-md-6 mb-3">
+                <h6 className="text-muted mb-1">Blood Group</h6>
+                <p className="mb-0">
+                  <Badge bg="danger" className="fs-6">{selectedRequest.bloodGroup}</Badge>
+                </p>
+              </div>
+              <div className="col-md-6 mb-3">
+                <h6 className="text-muted mb-1">Units Required</h6>
+                <p className="mb-0 fw-semibold">{selectedRequest.unitsRequired} units</p>
+              </div>
+              <div className="col-md-6 mb-3">
+                <h6 className="text-muted mb-1">Urgency Level</h6>
+                <p className="mb-0">
+                  <Badge className={getUrgencyColor(selectedRequest.urgency)}>
+                    <i className={`bi ${getUrgencyIcon(selectedRequest.urgency)} me-1`}></i>
+                    {selectedRequest.urgency.toUpperCase()}
+                  </Badge>
+                </p>
+              </div>
+              <div className="col-md-12 mb-3">
+                <h6 className="text-muted mb-1">Hospital</h6>
+                <p className="mb-0 fw-semibold">{selectedRequest.hospitalName || selectedRequest.hospital}</p>
+              </div>
+              <div className="col-md-6 mb-3">
+                <h6 className="text-muted mb-1">Contact Person</h6>
+                <p className="mb-0">{selectedRequest.contactPerson || selectedRequest.doctor}</p>
+              </div>
+              <div className="col-md-6 mb-3">
+                <h6 className="text-muted mb-1">Contact Phone</h6>
+                <p className="mb-0">
+                  <i className="bi bi-telephone me-2"></i>
+                  {selectedRequest.contactPhone}
+                </p>
+              </div>
+              <div className="col-md-12 mb-3">
+                <h6 className="text-muted mb-1">Medical Reason</h6>
+                <p className="mb-0">{selectedRequest.medicalReason || selectedRequest.reason}</p>
+              </div>
+              {selectedRequest.additionalNotes && (
+                <div className="col-md-12 mb-3">
+                  <h6 className="text-muted mb-1">Additional Notes</h6>
+                  <p className="mb-0">{selectedRequest.additionalNotes}</p>
+                </div>
+              )}
+              <div className="col-md-6 mb-3">
+                <h6 className="text-muted mb-1">Status</h6>
+                <p className="mb-0">
+                  <Badge bg={selectedRequest.status === 'completed' ? 'success' : 
+                            selectedRequest.status === 'cancelled' ? 'danger' : 'primary'}>
+                    {selectedRequest.status.toUpperCase()}
+                  </Badge>
+                </p>
+              </div>
+              <div className="col-md-6 mb-3">
+                <h6 className="text-muted mb-1">Created At</h6>
+                <p className="mb-0">{new Date(selectedRequest.createdAt).toLocaleString()}</p>
+              </div>
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowDetailsModal(false)}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Status Update Modal */}
+      <Modal show={showStatusModal} onHide={() => setShowStatusModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Update Request Status</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedRequest && (
+            <>
+              <div className="mb-3">
+                <p className="mb-2">
+                  <strong>Patient:</strong> {selectedRequest.patientName}
+                </p>
+                <p className="mb-0">
+                  <strong>Blood Group:</strong> <Badge bg="danger">{selectedRequest.bloodGroup}</Badge>
+                </p>
+              </div>
+              <Form>
+                <Form.Group className="mb-3">
+                  <Form.Label>New Status <span className="text-danger">*</span></Form.Label>
+                  <Form.Select 
+                    value={newStatus}
+                    onChange={(e) => setNewStatus(e.target.value)}
+                    required
+                  >
+                    <option value="active">Active</option>
+                    <option value="pending">Pending</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                  </Form.Select>
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>Notes (Optional)</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    placeholder="Add notes about this status change..."
+                    value={statusNotes}
+                    onChange={(e) => setStatusNotes(e.target.value)}
+                  />
+                </Form.Group>
+              </Form>
+            </>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowStatusModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleUpdateStatus}>
+            <i className="bi bi-save me-2"></i>
+            Update Status
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };

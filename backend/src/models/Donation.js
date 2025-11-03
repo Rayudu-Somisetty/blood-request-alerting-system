@@ -23,11 +23,6 @@ const donationSchema = new mongoose.Schema({
       min: 18,
       max: 65
     },
-    weight: {
-      type: Number,
-      required: true,
-      min: 45
-    },
     phone: {
       type: String,
       required: true
@@ -90,10 +85,6 @@ const donationSchema = new mongoose.Schema({
       type: Number,
       min: 35,
       max: 37.5
-    },
-    weight: {
-      type: Number,
-      min: 45
     }
   },
   

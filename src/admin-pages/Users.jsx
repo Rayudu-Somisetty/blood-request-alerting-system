@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import firebaseService from '../firebase/firebaseService';
+import { Modal, Button, Form } from 'react-bootstrap';
+import { toast } from 'react-toastify';
 
 const Users = () => {
   const [users, setUsers] = useState([]);
@@ -9,6 +11,23 @@ const Users = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  
+  // Modal states
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    bloodGroup: '',
+    status: 'Active',
+    city: '',
+    state: '',
+    address: ''
+  });
 
   const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
   const statuses = ['Active', 'Inactive', 'Pending'];
@@ -111,6 +130,119 @@ const Users = () => {
 
   const bloodGroupSummary = getBloodGroupSummary();
 
+  // Handle edit user
+  const handleEditUser = (user) => {
+    setSelectedUser(user);
+    setEditFormData({
+      firstName: user.name?.split(' ')[0] || '',
+      lastName: user.name?.split(' ').slice(1).join(' ') || '',
+      email: user.email || '',
+      phone: user.phone || '',
+      bloodGroup: user.bloodGroup || '',
+      status: user.status || 'Active',
+      city: user.location || '',
+      state: user.state || '',
+      address: user.address || ''
+    });
+    setShowEditModal(true);
+  };
+
+  // Handle delete user
+  const handleDeleteUser = (user) => {
+    setSelectedUser(user);
+    setShowDeleteModal(true);
+  };
+
+  // Confirm delete
+  const confirmDelete = async () => {
+    try {
+      await firebaseService.deleteUser(selectedUser.id);
+      toast.success('User deleted successfully');
+      setShowDeleteModal(false);
+      loadUsers();
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      toast.error('Failed to delete user');
+    }
+  };
+
+  // Save edited user
+  const handleSaveEdit = async (e) => {
+    e.preventDefault();
+    try {
+      const updateData = {
+        firstName: editFormData.firstName,
+        lastName: editFormData.lastName,
+        name: `${editFormData.firstName} ${editFormData.lastName}`,
+        fullName: `${editFormData.firstName} ${editFormData.lastName}`,
+        phone: editFormData.phone,
+        bloodGroup: editFormData.bloodGroup,
+        status: editFormData.status,
+        location: editFormData.city,
+        city: editFormData.city,
+        state: editFormData.state,
+        address: editFormData.address
+      };
+      
+      await firebaseService.updateUser(selectedUser.id, updateData);
+      toast.success('User updated successfully');
+      setShowEditModal(false);
+      loadUsers();
+    } catch (error) {
+      console.error('Error updating user:', error);
+      toast.error('Failed to update user');
+    }
+  };
+
+  // Handle add new user
+  const handleAddUser = () => {
+    setEditFormData({
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      bloodGroup: '',
+      status: 'Active',
+      city: '',
+      state: '',
+      address: ''
+    });
+    setShowAddModal(true);
+  };
+
+  // Save new user
+  const handleSaveNewUser = async (e) => {
+    e.preventDefault();
+    try {
+      const newUserData = {
+        firstName: editFormData.firstName,
+        lastName: editFormData.lastName,
+        name: `${editFormData.firstName} ${editFormData.lastName}`,
+        fullName: `${editFormData.firstName} ${editFormData.lastName}`,
+        email: editFormData.email,
+        phone: editFormData.phone,
+        bloodGroup: editFormData.bloodGroup,
+        status: editFormData.status,
+        location: editFormData.city,
+        city: editFormData.city,
+        state: editFormData.state,
+        address: editFormData.address,
+        userType: 'donor',
+        role: 'user',
+        totalDonations: 0,
+        isActive: true,
+        isVerified: false
+      };
+      
+      // Note: This would need a proper user creation method
+      toast.info('Please use the registration page to create new users');
+      setShowAddModal(false);
+    } catch (error) {
+      console.error('Error creating user:', error);
+      toast.error('Failed to create user');
+    }
+  };
+
   return (
     <div className="container-fluid p-4">
       <div className="row mb-4">
@@ -125,7 +257,7 @@ const Users = () => {
                 <i className="bi bi-arrow-clockwise me-2"></i>
                 Refresh
               </button>
-              <button className="btn btn-primary">
+              <button className="btn btn-primary" onClick={handleAddUser}>
                 <i className="bi bi-person-plus me-2"></i>
                 Add New User
               </button>
@@ -344,14 +476,28 @@ const Users = () => {
                           </td>
                           <td className="py-3">
                             <div className="btn-group" role="group">
-                              <button className="btn btn-sm btn-outline-primary" title="View Details">
+                              <button 
+                                className="btn btn-sm btn-outline-primary" 
+                                title="View Details"
+                                onClick={() => {
+                                  toast.info('View details feature coming soon');
+                                }}
+                              >
                                 <i className="bi bi-eye"></i>
                               </button>
-                              <button className="btn btn-sm btn-outline-success" title="Contact">
-                                <i className="bi bi-telephone"></i>
-                              </button>
-                              <button className="btn btn-sm btn-outline-secondary" title="Edit">
+                              <button 
+                                className="btn btn-sm btn-outline-secondary" 
+                                title="Edit"
+                                onClick={() => handleEditUser(user)}
+                              >
                                 <i className="bi bi-pencil"></i>
+                              </button>
+                              <button 
+                                className="btn btn-sm btn-outline-danger" 
+                                title="Delete"
+                                onClick={() => handleDeleteUser(user)}
+                              >
+                                <i className="bi bi-trash"></i>
                               </button>
                             </div>
                           </td>
@@ -365,6 +511,263 @@ const Users = () => {
           </div>
         </div>
       </div>
+
+      {/* Edit User Modal */}
+      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Edit User</Modal.Title>
+        </Modal.Header>
+        <Form onSubmit={handleSaveEdit}>
+          <Modal.Body>
+            <div className="row">
+              <div className="col-md-6 mb-3">
+                <Form.Group>
+                  <Form.Label>First Name <span className="text-danger">*</span></Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={editFormData.firstName}
+                    onChange={(e) => setEditFormData({...editFormData, firstName: e.target.value})}
+                    required
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-6 mb-3">
+                <Form.Group>
+                  <Form.Label>Last Name <span className="text-danger">*</span></Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={editFormData.lastName}
+                    onChange={(e) => setEditFormData({...editFormData, lastName: e.target.value})}
+                    required
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-6 mb-3">
+                <Form.Group>
+                  <Form.Label>Email <span className="text-danger">*</span></Form.Label>
+                  <Form.Control
+                    type="email"
+                    value={editFormData.email}
+                    onChange={(e) => setEditFormData({...editFormData, email: e.target.value})}
+                    required
+                    disabled
+                  />
+                  <Form.Text className="text-muted">Email cannot be changed</Form.Text>
+                </Form.Group>
+              </div>
+              <div className="col-md-6 mb-3">
+                <Form.Group>
+                  <Form.Label>Phone <span className="text-danger">*</span></Form.Label>
+                  <Form.Control
+                    type="tel"
+                    value={editFormData.phone}
+                    onChange={(e) => setEditFormData({...editFormData, phone: e.target.value})}
+                    required
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-6 mb-3">
+                <Form.Group>
+                  <Form.Label>Blood Group <span className="text-danger">*</span></Form.Label>
+                  <Form.Select
+                    value={editFormData.bloodGroup}
+                    onChange={(e) => setEditFormData({...editFormData, bloodGroup: e.target.value})}
+                    required
+                  >
+                    <option value="">Select Blood Group</option>
+                    {bloodGroups.map(group => (
+                      <option key={group} value={group}>{group}</option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </div>
+              <div className="col-md-6 mb-3">
+                <Form.Group>
+                  <Form.Label>Status <span className="text-danger">*</span></Form.Label>
+                  <Form.Select
+                    value={editFormData.status}
+                    onChange={(e) => setEditFormData({...editFormData, status: e.target.value})}
+                    required
+                  >
+                    {statuses.map(status => (
+                      <option key={status} value={status}>{status}</option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </div>
+              <div className="col-md-6 mb-3">
+                <Form.Group>
+                  <Form.Label>City</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={editFormData.city}
+                    onChange={(e) => setEditFormData({...editFormData, city: e.target.value})}
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-6 mb-3">
+                <Form.Group>
+                  <Form.Label>State</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={editFormData.state}
+                    onChange={(e) => setEditFormData({...editFormData, state: e.target.value})}
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-12 mb-3">
+                <Form.Group>
+                  <Form.Label>Address</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={2}
+                    value={editFormData.address}
+                    onChange={(e) => setEditFormData({...editFormData, address: e.target.value})}
+                  />
+                </Form.Group>
+              </div>
+            </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowEditModal(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" type="submit">
+              <i className="bi bi-save me-2"></i>
+              Save Changes
+            </Button>
+          </Modal.Footer>
+        </Form>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
+        <Modal.Header closeButton className="border-0">
+          <Modal.Title>Confirm Delete</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="text-center py-4">
+          <div className="mb-3">
+            <i className="bi bi-exclamation-triangle-fill text-warning" style={{fontSize: '3rem'}}></i>
+          </div>
+          <h5>Are you sure you want to delete this user?</h5>
+          <p className="text-muted mb-0">
+            {selectedUser && (
+              <>
+                <strong>{selectedUser.name}</strong>
+                <br />
+                {selectedUser.email}
+              </>
+            )}
+          </p>
+          <p className="text-danger mt-3">
+            <small>This action cannot be undone!</small>
+          </p>
+        </Modal.Body>
+        <Modal.Footer className="border-0">
+          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={confirmDelete}>
+            <i className="bi bi-trash me-2"></i>
+            Yes, Delete User
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Add User Modal */}
+      <Modal show={showAddModal} onHide={() => setShowAddModal(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Add New User</Modal.Title>
+        </Modal.Header>
+        <Form onSubmit={handleSaveNewUser}>
+          <Modal.Body>
+            <div className="alert alert-info">
+              <i className="bi bi-info-circle me-2"></i>
+              New users should register through the public registration page. This form is for manual admin entry only.
+            </div>
+            <div className="row">
+              <div className="col-md-6 mb-3">
+                <Form.Group>
+                  <Form.Label>First Name <span className="text-danger">*</span></Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={editFormData.firstName}
+                    onChange={(e) => setEditFormData({...editFormData, firstName: e.target.value})}
+                    required
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-6 mb-3">
+                <Form.Group>
+                  <Form.Label>Last Name <span className="text-danger">*</span></Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={editFormData.lastName}
+                    onChange={(e) => setEditFormData({...editFormData, lastName: e.target.value})}
+                    required
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-6 mb-3">
+                <Form.Group>
+                  <Form.Label>Email <span className="text-danger">*</span></Form.Label>
+                  <Form.Control
+                    type="email"
+                    value={editFormData.email}
+                    onChange={(e) => setEditFormData({...editFormData, email: e.target.value})}
+                    required
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-6 mb-3">
+                <Form.Group>
+                  <Form.Label>Phone <span className="text-danger">*</span></Form.Label>
+                  <Form.Control
+                    type="tel"
+                    value={editFormData.phone}
+                    onChange={(e) => setEditFormData({...editFormData, phone: e.target.value})}
+                    required
+                  />
+                </Form.Group>
+              </div>
+              <div className="col-md-6 mb-3">
+                <Form.Group>
+                  <Form.Label>Blood Group <span className="text-danger">*</span></Form.Label>
+                  <Form.Select
+                    value={editFormData.bloodGroup}
+                    onChange={(e) => setEditFormData({...editFormData, bloodGroup: e.target.value})}
+                    required
+                  >
+                    <option value="">Select Blood Group</option>
+                    {bloodGroups.map(group => (
+                      <option key={group} value={group}>{group}</option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </div>
+              <div className="col-md-6 mb-3">
+                <Form.Group>
+                  <Form.Label>City</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={editFormData.city}
+                    onChange={(e) => setEditFormData({...editFormData, city: e.target.value})}
+                  />
+                </Form.Group>
+              </div>
+            </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowAddModal(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" type="submit">
+              <i className="bi bi-person-plus me-2"></i>
+              Add User
+            </Button>
+          </Modal.Footer>
+        </Form>
+      </Modal>
     </div>
   );
 };

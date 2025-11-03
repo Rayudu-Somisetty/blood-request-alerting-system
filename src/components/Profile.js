@@ -18,8 +18,6 @@ const Profile = () => {
     phone: '',
     address: '',
     emergencyContact: '',
-    weight: '',
-    height: '',
     allergies: '',
     medications: '',
     chronicConditions: ''
@@ -65,8 +63,6 @@ const Profile = () => {
     nextEligibleDate: user?.nextEligibleDate || '',
     bloodRequests: user?.bloodRequests || 0,
     lifeSaved: user?.lifeSaved || 0,
-    weight: user?.weight || '',
-    height: user?.height || '',
     medicalHistory: {
       allergies: user?.allergies || ['None'],
       chronicConditions: user?.chronicConditions || [],
@@ -141,8 +137,6 @@ const Profile = () => {
         phone: profileData.phone || '',
         address: profileData.address || '',
         emergencyContact: profileData.emergencyContact || '',
-        weight: profileData.weight || '',
-        height: profileData.height || '',
         allergies: profileData.medicalHistory?.allergies ? profileData.medicalHistory.allergies.join(', ') : '',
         medications: profileData.medicalHistory?.currentMedications ? profileData.medicalHistory.currentMedications.join(', ') : '',
         chronicConditions: profileData.medicalHistory?.chronicConditions ? profileData.medicalHistory.chronicConditions.join(', ') : ''
@@ -166,8 +160,6 @@ const Profile = () => {
       phone: editForm.phone,
       address: editForm.address,
       emergencyContact: editForm.emergencyContact,
-      weight: editForm.weight,
-      height: editForm.height,
       medicalHistory: {
         ...profileData.medicalHistory,
         allergies: editForm.allergies ? editForm.allergies.split(', ').filter(item => item.trim()) : ['None'],
@@ -243,12 +235,6 @@ const Profile = () => {
                     <i className="bi bi-person-badge text-info me-2"></i>
                     <span className="fw-semibold me-2">{typeof profileData.age === 'number' ? `${profileData.age} years` : formatValue(profileData.age)}</span>
                     <small className="text-muted">Age</small>
-                  </div>
-
-                  <div className="d-flex justify-content-center align-items-center mb-2">
-                    <i className="bi bi-rulers text-secondary me-2"></i>
-                    <span className="fw-semibold me-2">{formatValue(profileData.weight, 'kg')} | {formatValue(profileData.height, 'cm')}</span>
-                    <small className="text-muted">Weight | Height</small>
                   </div>
                   
                   <div className="d-flex justify-content-center align-items-center mb-2">
@@ -408,8 +394,6 @@ const Profile = () => {
                             </div>
                             <p><strong>Name:</strong> {formatValue(profileData.name)}</p>
                             <p><strong>Age:</strong> {typeof profileData.age === 'number' ? `${profileData.age} years` : formatValue(profileData.age)}</p>
-                            <p><strong>Weight:</strong> {formatValue(profileData.weight, 'kg')}</p>
-                            <p><strong>Height:</strong> {formatValue(profileData.height, 'cm')}</p>
                             <p><strong>Phone:</strong> {formatValue(profileData.phone)}</p>
                             <p><strong>Address:</strong> {formatValue(profileData.address)}</p>
                             <p><strong>Emergency Contact:</strong> {formatValue(profileData.emergencyContact)}</p>
@@ -805,33 +789,7 @@ const Profile = () => {
               </Col>
             </Row>
             <Row>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Weight (kg)</Form.Label>
-                  <Form.Control
-                    type="number"
-                    min="30"
-                    max="300"
-                    value={editForm.weight}
-                    onChange={(e) => setEditForm({...editForm, weight: e.target.value})}
-                    placeholder="e.g., 70"
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Height (cm)</Form.Label>
-                  <Form.Control
-                    type="number"
-                    min="100"
-                    max="250"
-                    value={editForm.height}
-                    onChange={(e) => setEditForm({...editForm, height: e.target.value})}
-                    placeholder="e.g., 175"
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={4}>
+              <Col md={6}>
                 <Form.Group className="mb-3">
                   <Form.Label>Phone Number</Form.Label>
                   <Form.Control
@@ -842,8 +800,6 @@ const Profile = () => {
                   />
                 </Form.Group>
               </Col>
-            </Row>
-            <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
                   <Form.Label>Emergency Contact</Form.Label>
@@ -855,7 +811,9 @@ const Profile = () => {
                   />
                 </Form.Group>
               </Col>
-              <Col md={6}>
+            </Row>
+            <Row>
+              <Col md={12}>
                 <Form.Group className="mb-3">
                   <Form.Label>Address</Form.Label>
                   <Form.Control

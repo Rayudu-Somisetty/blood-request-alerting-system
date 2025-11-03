@@ -144,7 +144,7 @@ const Donations = () => {
             </div>
             
             <DonationForm onDonationAdded={getDonations} />
-            <DonationList donations={donations} />
+            <DonationList donations={donations} onRefresh={getDonations} />
         </div>
     );
 };

@@ -85,13 +85,6 @@ const userSchema = new mongoose.Schema({
       return this.userType !== 'admin';
     }
   },
-  weight: {
-    type: Number,
-    min: [45, 'Weight must be at least 45 kg'],
-    required: function() {
-      return this.userType === 'donor';
-    }
-  },
   
   // Address Information
   address: {

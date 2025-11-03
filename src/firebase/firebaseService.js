@@ -1260,6 +1260,33 @@ Please contact the donor directly to coordinate the donation.`,
     }
   }
 
+  async updateBloodRequest(requestId, updateData) {
+    try {
+      const requestRef = doc(db, 'bloodRequests', requestId);
+      const updatePayload = {
+        ...updateData,
+        updatedAt: serverTimestamp()
+      };
+      
+      await updateDoc(requestRef, updatePayload);
+      return await this.getBloodRequestById(requestId);
+    } catch (error) {
+      console.error('Update blood request error:', error);
+      throw new Error(this.getErrorMessage(error));
+    }
+  }
+
+  async deleteBloodRequest(requestId) {
+    try {
+      const requestRef = doc(db, 'bloodRequests', requestId);
+      await deleteDoc(requestRef);
+      return { success: true };
+    } catch (error) {
+      console.error('Delete blood request error:', error);
+      throw new Error(this.getErrorMessage(error));
+    }
+  }
+
   // Get notifications for a specific user with blood request details
   async getUserNotificationsWithDetails(userId) {
     try {

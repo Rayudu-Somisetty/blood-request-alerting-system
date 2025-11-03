@@ -9,7 +9,6 @@ const RequestBlood = () => {
     patientName: '',
     age: 18,
     gender: '',
-    weight: '',
     bloodGroup: '',
     unitsRequired: 1,
     urgencyLevel: '',
@@ -262,23 +261,7 @@ const RequestBlood = () => {
                   </Row>
 
                   <Row>
-                    <Col md={4}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Weight (kg) *</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="weight"
-                          value={formData.weight}
-                          onChange={handleChange}
-                          placeholder="Patient weight"
-                          min="1"
-                          max="200"
-                          required
-                        />
-                      </Form.Group>
-                    </Col>
-                    
-                    <Col md={4}>
+                    <Col md={6}>
                       <Form.Group className="mb-3">
                         <Form.Label>Blood Group *</Form.Label>
                         <Form.Select

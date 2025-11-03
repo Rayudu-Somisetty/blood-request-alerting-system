@@ -9,7 +9,6 @@ const DonateBlood = () => {
     name: '',
     age: 18,
     gender: '',
-    weight: '',
     bloodGroup: '',
     phone: '',
     email: '',
@@ -44,7 +43,7 @@ const DonateBlood = () => {
 
     try {
       // Validate required fields
-      if (!formData.name || !formData.bloodGroup || !formData.phone || !formData.email || !formData.gender || !formData.weight) {
+      if (!formData.name || !formData.bloodGroup || !formData.phone || !formData.email || !formData.gender) {
         showAlert('danger', 'Please fill in all required fields.');
         setLoading(false);
         return;
@@ -58,7 +57,6 @@ const DonateBlood = () => {
           phone: formData.phone.startsWith('+91') ? formData.phone : `+91${formData.phone}`,
           age: parseInt(formData.age),
           gender: formData.gender,
-          weight: parseFloat(formData.weight),
           bloodGroup: formData.bloodGroup
         },
         preferredDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
@@ -86,7 +84,6 @@ const DonateBlood = () => {
           name: '',
           age: 18,
           gender: '',
-          weight: '',
           bloodGroup: '',
           phone: '',
           email: '',
@@ -197,26 +194,8 @@ const DonateBlood = () => {
                       </Form.Group>
                     </Col>
                   </Row>
-                  {/* Weight & Blood Group */}
+                  {/* Blood Group */}
                   <Row>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label>Weight (kg) *</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="weight"
-                          value={formData.weight}
-                          onChange={handleChange}
-                          placeholder="Enter weight in kg"
-                          min="45"
-                          max="200"
-                          required
-                        />
-                        <Form.Text className="text-muted">
-                          Minimum weight required: 45 kg
-                        </Form.Text>
-                      </Form.Group>
-                    </Col>
                     <Col md={6}>
                       <Form.Group className="mb-3">
                         <Form.Label>Blood Group *</Form.Label>

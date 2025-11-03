@@ -39,7 +39,6 @@ model User {
   age         Int?
   gender      String? // male, female, other
   bloodGroup  String? // A+, A-, B+, B-, AB+, AB-, O+, O-
-  weight      Float?
 
   // Address Information
   street   String?
@@ -117,7 +116,6 @@ model Donation {
   donorName       String
   donorBloodGroup String // A+, A-, B+, B-, AB+, AB-, O+, O-
   donorAge        Int
-  donorWeight     Float
   donorPhone      String
   donorEmail      String
 
