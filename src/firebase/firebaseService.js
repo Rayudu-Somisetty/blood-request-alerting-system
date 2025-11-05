@@ -243,6 +243,9 @@ class FirebaseService {
         throw new Error('No authenticated user');
       }
       
+      console.log('Updating user profile in Firestore for UID:', user.uid);
+      console.log('Profile data to update:', profileData);
+      
       const userDocRef = doc(db, 'users', user.uid);
       const updateData = {
         ...profileData,
@@ -250,15 +253,19 @@ class FirebaseService {
       };
       
       await updateDoc(userDocRef, updateData);
+      console.log('✅ Profile successfully updated in Firestore database');
       
       // Update Firebase profile if name changed
       if (profileData.firstName || profileData.lastName) {
         await updateFirebaseProfile(user, {
           displayName: `${profileData.firstName || ''} ${profileData.lastName || ''}`.trim()
         });
+        console.log('✅ Firebase Auth display name updated');
       }
       
-      return await this.getCurrentUser();
+      const updatedUser = await this.getCurrentUser();
+      console.log('✅ Retrieved updated user data from database:', updatedUser);
+      return updatedUser;
     } catch (error) {
       console.error('Update profile error:', error);
       throw new Error(this.getErrorMessage(error));
@@ -406,6 +413,9 @@ class FirebaseService {
 
   async updateUser(userId, userData) {
     try {
+      console.log('Updating user in Firestore database:', userId);
+      console.log('Update data:', userData);
+      
       const userDocRef = doc(db, 'users', userId);
       const updateData = {
         ...userData,
@@ -413,20 +423,28 @@ class FirebaseService {
       };
       
       await updateDoc(userDocRef, updateData);
-      return await this.getUserById(userId);
+      console.log('✅ User successfully updated in database');
+      
+      const updatedUser = await this.getUserById(userId);
+      console.log('✅ Retrieved updated user from database:', updatedUser);
+      return updatedUser;
     } catch (error) {
-      console.error('Update user error:', error);
+      console.error('❌ Update user error:', error);
       throw new Error(this.getErrorMessage(error));
     }
   }
 
   async deleteUser(userId) {
     try {
+      console.log('Deleting user from Firestore database:', userId);
+      
       const userDocRef = doc(db, 'users', userId);
       await deleteDoc(userDocRef);
+      
+      console.log('✅ User successfully deleted from database');
       return { success: true };
     } catch (error) {
-      console.error('Delete user error:', error);
+      console.error('❌ Delete user error:', error);
       throw new Error(this.getErrorMessage(error));
     }
   }
@@ -439,6 +457,9 @@ class FirebaseService {
         throw new Error('No authenticated user');
       }
       
+      console.log('Creating new donation in Firestore database');
+      console.log('Donation data:', donationData);
+      
       const donation = {
         ...donationData,
         donorId: user.uid,
@@ -448,6 +469,7 @@ class FirebaseService {
       };
       
       const docRef = await addDoc(collection(db, 'donations'), donation);
+      console.log('✅ Donation successfully created in database with ID:', docRef.id);
       
       // Update user's donation count
       const userDocRef = doc(db, 'users', user.uid);
@@ -459,11 +481,12 @@ class FirebaseService {
           lastDonationDate: serverTimestamp(),
           updatedAt: serverTimestamp()
         });
+        console.log('✅ User donation count updated in database');
       }
       
       return { id: docRef.id, ...donation };
     } catch (error) {
-      console.error('Create donation error:', error);
+      console.error('❌ Create donation error:', error);
       throw new Error(this.getErrorMessage(error));
     }
   }
@@ -514,6 +537,9 @@ class FirebaseService {
 
   async updateDonation(donationId, donationData) {
     try {
+      console.log('Updating donation in Firestore database:', donationId);
+      console.log('Donation update data:', donationData);
+      
       const donationDocRef = doc(db, 'donations', donationId);
       const updateData = {
         ...donationData,
@@ -521,11 +547,14 @@ class FirebaseService {
       };
       
       await updateDoc(donationDocRef, updateData);
+      console.log('✅ Donation successfully updated in database');
       
       const updatedDoc = await getDoc(donationDocRef);
-      return { id: updatedDoc.id, ...updatedDoc.data() };
+      const result = { id: updatedDoc.id, ...updatedDoc.data() };
+      console.log('✅ Retrieved updated donation from database:', result);
+      return result;
     } catch (error) {
-      console.error('Update donation error:', error);
+      console.error('❌ Update donation error:', error);
       throw new Error(this.getErrorMessage(error));
     }
   }
@@ -535,6 +564,9 @@ class FirebaseService {
     try {
       const user = auth.currentUser;
       const requesterId = user ? user.uid : null;
+      
+      console.log('Creating new blood request in Firestore database');
+      console.log('Blood request data:', requestData);
       
       const request = {
         ...requestData,
@@ -547,6 +579,8 @@ class FirebaseService {
       };
       
       const docRef = await addDoc(collection(db, 'bloodRequests'), request);
+      console.log('✅ Blood request successfully created in database with ID:', docRef.id);
+      
       const requestWithId = { 
         id: docRef.id, 
         ...request,
@@ -558,7 +592,7 @@ class FirebaseService {
       
       return requestWithId;
     } catch (error) {
-      console.error('Create blood request error:', error);
+      console.error('❌ Create blood request error:', error);
       throw new Error(this.getErrorMessage(error));
     }
   }
@@ -804,15 +838,19 @@ class FirebaseService {
 
   async markNotificationAsRead(notificationId) {
     try {
+      console.log('Marking notification as read in Firestore database:', notificationId);
+      
       const notificationRef = doc(db, 'notifications', notificationId);
       await updateDoc(notificationRef, {
         read: true,
         readAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
+      
+      console.log('✅ Notification successfully marked as read in database');
       return { success: true };
     } catch (error) {
-      console.error('Mark notification as read error:', error);
+      console.error('❌ Mark notification as read error:', error);
       throw new Error(this.getErrorMessage(error));
     }
   }
@@ -1263,6 +1301,9 @@ Please contact the donor directly to coordinate the donation.`,
 
   async updateBloodRequest(requestId, updateData) {
     try {
+      console.log('Updating blood request in Firestore database:', requestId);
+      console.log('Blood request update data:', updateData);
+      
       const requestRef = doc(db, 'bloodRequests', requestId);
       const updatePayload = {
         ...updateData,
@@ -1270,20 +1311,28 @@ Please contact the donor directly to coordinate the donation.`,
       };
       
       await updateDoc(requestRef, updatePayload);
-      return await this.getBloodRequestById(requestId);
+      console.log('✅ Blood request successfully updated in database');
+      
+      const result = await this.getBloodRequestById(requestId);
+      console.log('✅ Retrieved updated blood request from database:', result);
+      return result;
     } catch (error) {
-      console.error('Update blood request error:', error);
+      console.error('❌ Update blood request error:', error);
       throw new Error(this.getErrorMessage(error));
     }
   }
 
   async deleteBloodRequest(requestId) {
     try {
+      console.log('Deleting blood request from Firestore database:', requestId);
+      
       const requestRef = doc(db, 'bloodRequests', requestId);
       await deleteDoc(requestRef);
+      
+      console.log('✅ Blood request successfully deleted from database');
       return { success: true };
     } catch (error) {
-      console.error('Delete blood request error:', error);
+      console.error('❌ Delete blood request error:', error);
       throw new Error(this.getErrorMessage(error));
     }
   }

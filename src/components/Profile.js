@@ -7,7 +7,7 @@ import Footer from './Footer';
 import firebaseService from '../firebase/firebaseService';
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, updateProfile } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [showEditModal, setShowEditModal] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -47,31 +47,31 @@ const Profile = () => {
 
   // Get user data from authentication context instead of mock data
   const [profileData, setProfileData] = useState({
-    name: getFullName(user),
-    firstName: user?.firstName || '',
-    lastName: user?.lastName || '',
-    email: user?.email || '',
-    bloodGroup: user?.bloodGroup || '',
-    birthYear: user?.birthYear || '',
-    age: calculateAge(user?.birthYear),
-    phone: user?.phone || '',
-    address: user?.address || '',
-    emergencyContact: user?.emergencyContact || '',
-    registrationDate: user?.registrationDate || new Date().toISOString().split('T')[0],
-    totalDonations: user?.totalDonations || 0,
-    lastDonation: user?.lastDonation || 'No donations yet',
-    nextEligibleDate: user?.nextEligibleDate || '',
-    bloodRequests: user?.bloodRequests || 0,
-    lifeSaved: user?.lifeSaved || 0,
+    name: '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    bloodGroup: '',
+    birthYear: '',
+    age: 'N/A',
+    phone: '',
+    address: '',
+    emergencyContact: '',
+    registrationDate: '',
+    totalDonations: 0,
+    lastDonation: 'No donations yet',
+    nextEligibleDate: '',
+    bloodRequests: 0,
+    lifeSaved: 0,
     medicalHistory: {
-      allergies: user?.allergies || ['None'],
-      chronicConditions: user?.chronicConditions || [],
-      currentMedications: user?.currentMedications || []
+      allergies: ['None'],
+      chronicConditions: [],
+      currentMedications: []
     },
     donationEligibility: {
-      isEligible: user?.isEligible || true,
-      reasons: user?.eligibilityReasons || [],
-      nextEligibleDate: user?.nextEligibleDate || ''
+      isEligible: true,
+      reasons: [],
+      nextEligibleDate: ''
     }
   });
 
@@ -108,16 +108,37 @@ const Profile = () => {
       setDonationHistory(userDonations);
       setRequestHistory(userRequests);
 
-      // Update profile data with real statistics
-      setProfileData(prev => ({
-        ...prev,
+      // Update profile data with fresh user data from context
+      setProfileData({
+        name: getFullName(user),
+        firstName: user?.firstName || '',
+        lastName: user?.lastName || '',
+        email: user?.email || '',
+        bloodGroup: user?.bloodGroup || '',
+        birthYear: user?.birthYear || '',
+        age: calculateAge(user?.birthYear),
+        phone: user?.phone || '',
+        address: user?.address || '',
+        emergencyContact: user?.emergencyContact || '',
+        registrationDate: user?.registrationDate || user?.createdAt?.toDate?.()?.toISOString?.()?.split('T')[0] || new Date().toISOString().split('T')[0],
         totalDonations: userDonations.filter(d => d.status === 'completed').length,
-        bloodRequests: userRequests.length,
-        lifeSaved: userDonations.filter(d => d.status === 'completed').length * 3, // Assume each donation can save up to 3 lives
         lastDonation: userDonations.length > 0 ? 
           new Date(userDonations[userDonations.length - 1].createdAt).toLocaleDateString() : 
-          'No donations yet'
-      }));
+          'No donations yet',
+        nextEligibleDate: user?.nextEligibleDate || '',
+        bloodRequests: userRequests.length,
+        lifeSaved: userDonations.filter(d => d.status === 'completed').length * 3,
+        medicalHistory: {
+          allergies: user?.allergies || ['None'],
+          chronicConditions: user?.chronicConditions || [],
+          currentMedications: user?.currentMedications || []
+        },
+        donationEligibility: {
+          isEligible: user?.isEligible || true,
+          reasons: user?.eligibilityReasons || [],
+          nextEligibleDate: user?.nextEligibleDate || ''
+        }
+      });
 
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -148,31 +169,60 @@ const Profile = () => {
     setShowEditModal(true);
   };
 
-  const handleSaveProfile = () => {
-    const updatedProfile = {
-      ...profileData,
-      firstName: editForm.firstName,
-      lastName: editForm.lastName,
-      name: editForm.firstName && editForm.lastName ? `${editForm.firstName} ${editForm.lastName}` : editForm.firstName || editForm.lastName || 'N/A',
-      bloodGroup: editForm.bloodGroup,
-      birthYear: editForm.birthYear,
-      age: calculateAge(editForm.birthYear),
-      phone: editForm.phone,
-      address: editForm.address,
-      emergencyContact: editForm.emergencyContact,
-      medicalHistory: {
-        ...profileData.medicalHistory,
+  const handleSaveProfile = async () => {
+    try {
+      // Prepare the data to save to Firebase
+      const updateData = {
+        firstName: editForm.firstName,
+        lastName: editForm.lastName,
+        bloodGroup: editForm.bloodGroup,
+        birthYear: editForm.birthYear,
+        phone: editForm.phone,
+        address: editForm.address,
+        emergencyContact: editForm.emergencyContact,
         allergies: editForm.allergies ? editForm.allergies.split(', ').filter(item => item.trim()) : ['None'],
         currentMedications: editForm.medications ? editForm.medications.split(', ').filter(item => item.trim()) : [],
         chronicConditions: editForm.chronicConditions ? editForm.chronicConditions.split(', ').filter(item => item.trim()) : []
+      };
+
+      console.log('Saving profile to database:', updateData);
+
+      // Save to Firebase using the updateProfile method from AuthContext
+      // This will update both the database AND the user context
+      const result = await updateProfile(updateData);
+
+      if (result.success) {
+        console.log('Profile saved successfully to database');
+        
+        // Update local profile data immediately for better UX
+        const updatedProfile = {
+          ...profileData,
+          firstName: editForm.firstName,
+          lastName: editForm.lastName,
+          name: editForm.firstName && editForm.lastName ? `${editForm.firstName} ${editForm.lastName}` : editForm.firstName || editForm.lastName || 'N/A',
+          bloodGroup: editForm.bloodGroup,
+          birthYear: editForm.birthYear,
+          age: calculateAge(editForm.birthYear),
+          phone: editForm.phone,
+          address: editForm.address,
+          emergencyContact: editForm.emergencyContact,
+          medicalHistory: {
+            ...profileData.medicalHistory,
+            allergies: updateData.allergies,
+            currentMedications: updateData.currentMedications,
+            chronicConditions: updateData.chronicConditions
+          }
+        };
+        
+        setProfileData(updatedProfile);
+        setShowEditModal(false);
+        
+        // Toast notification is already handled by AuthContext
       }
-    };
-    
-    setProfileData(updatedProfile);
-    setShowEditModal(false);
-    
-    // Here you would typically save to database/Firebase
-    // Example: await updateUserProfile(user.uid, updatedProfile);
+    } catch (error) {
+      console.error('Error saving profile to database:', error);
+      // Error notification is already handled by AuthContext
+    }
   };
 
   const getBloodGroupBadgeColor = (bloodGroup) => {
