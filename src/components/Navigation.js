@@ -103,19 +103,13 @@ const Navigation = () => {
                     <Dropdown.Item as={Link} to="/profile">
                       <i className="bi bi-person me-2"></i>My Profile
                     </Dropdown.Item>
-                    <Dropdown.Item onClick={handleNotificationClick}>
-                      <FaBell className="me-2" />
-                      Blood Requests
-                      {unreadCount > 0 && (
-                        <Badge bg="danger" className="ms-2">
-                          {unreadCount}
-                        </Badge>
-                      )}
-                    </Dropdown.Item>
                     {user?.isAdmin && (
-                      <Dropdown.Item as={Link} to="/admin/dashboard">
-                        <i className="bi bi-gear me-2"></i>Admin Panel
-                      </Dropdown.Item>
+                      <>
+                        <Dropdown.Divider />
+                        <Dropdown.Item as={Link} to="/admin/dashboard">
+                          <i className="bi bi-gear me-2"></i>Admin Panel
+                        </Dropdown.Item>
+                      </>
                     )}
                     <Dropdown.Divider />
                     <Dropdown.Item onClick={handleLogout}>
