@@ -16,8 +16,7 @@ const DonateBloodRequests = () => {
   // Filter states
   const [filters, setFilters] = useState({
     bloodGroup: '',
-    urgencyLevel: '',
-    location: ''
+    urgencyLevel: ''
   });
 
   const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
@@ -70,13 +69,6 @@ const DonateBloodRequests = () => {
       filtered = filtered.filter(req => req.urgencyLevel === filters.urgencyLevel);
     }
 
-    // Filter by location (search in hospital name)
-    if (filters.location) {
-      filtered = filtered.filter(req => 
-        req.hospitalName?.toLowerCase().includes(filters.location.toLowerCase())
-      );
-    }
-
     // Sort by urgency and date
     filtered.sort((a, b) => {
       const urgencyOrder = { 'critical': 3, 'urgent': 2, 'normal': 1 };
@@ -112,8 +104,7 @@ const DonateBloodRequests = () => {
   const clearFilters = () => {
     setFilters({
       bloodGroup: '',
-      urgencyLevel: '',
-      location: ''
+      urgencyLevel: ''
     });
   };
 
@@ -177,7 +168,7 @@ const DonateBloodRequests = () => {
         <div className="text-center mb-5">
           <h2 className="section-title">
             <FaTint className="me-3 text-danger" />
-            <span className="highlight">Donate Blood - Active Requests</span>
+            <span className="highlight">Donate Blood</span>
             <div className="subtitle">Help Save Lives by Responding to Blood Requests</div>
           </h2>
         </div>
@@ -197,7 +188,7 @@ const DonateBloodRequests = () => {
           </Card.Header>
           <Card.Body>
             <Row>
-              <Col md={3}>
+              <Col md={5}>
                 <Form.Group className="mb-3">
                   <Form.Label>Blood Group</Form.Label>
                   <Form.Select
@@ -211,7 +202,7 @@ const DonateBloodRequests = () => {
                   </Form.Select>
                 </Form.Group>
               </Col>
-              <Col md={3}>
+              <Col md={5}>
                 <Form.Group className="mb-3">
                   <Form.Label>Urgency Level</Form.Label>
                   <Form.Select
@@ -223,17 +214,6 @@ const DonateBloodRequests = () => {
                       <option key={level.value} value={level.value}>{level.label}</option>
                     ))}
                   </Form.Select>
-                </Form.Group>
-              </Col>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Location (Hospital)</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="Search by hospital name..."
-                    value={filters.location}
-                    onChange={(e) => handleFilterChange('location', e.target.value)}
-                  />
                 </Form.Group>
               </Col>
               <Col md={2} className="d-flex align-items-end">
