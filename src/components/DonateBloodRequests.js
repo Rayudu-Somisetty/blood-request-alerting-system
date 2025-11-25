@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Badge, Button, Form, Alert, Spinner } from 'react-bootstrap';
-import { FaTint, FaHospital, FaMapMarkerAlt, FaCalendarAlt, FaHeart, FaFilter } from 'react-icons/fa';
+import { Container, Row, Col, Card, Badge, Button, Form, Alert, Spinner, InputGroup } from 'react-bootstrap';
+import { FaTint, FaHospital, FaMapMarkerAlt, FaCalendarAlt, FaHeart, FaFilter, FaSearch } from 'react-icons/fa';
 import firebaseService from '../firebase/firebaseService';
 import { useAuth } from '../context/AuthContext';
 import './DonateBloodRequests.css';
@@ -16,7 +16,8 @@ const DonateBloodRequests = () => {
   // Filter states
   const [filters, setFilters] = useState({
     bloodGroup: '',
-    urgencyLevel: ''
+    urgencyLevel: '',
+    searchQuery: ''
   });
 
   const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
@@ -58,6 +59,28 @@ const DonateBloodRequests = () => {
 
   const applyFilters = () => {
     let filtered = [...requests];
+
+    // Filter by search query (searches across multiple fields)
+    if (filters.searchQuery && filters.searchQuery.trim() !== '') {
+      const query = filters.searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(req => {
+        const hospitalName = (req.hospitalName || '').toLowerCase();
+        const patientName = (req.patientName || '').toLowerCase();
+        const medicalReason = (req.medicalReason || '').toLowerCase();
+        const location = (req.location || '').toLowerCase();
+        const address = (req.address || '').toLowerCase();
+        const city = (req.city || '').toLowerCase();
+        const state = (req.state || '').toLowerCase();
+        
+        return hospitalName.includes(query) ||
+               patientName.includes(query) ||
+               medicalReason.includes(query) ||
+               location.includes(query) ||
+               address.includes(query) ||
+               city.includes(query) ||
+               state.includes(query);
+      });
+    }
 
     // Filter by blood group
     if (filters.bloodGroup) {
@@ -104,7 +127,8 @@ const DonateBloodRequests = () => {
   const clearFilters = () => {
     setFilters({
       bloodGroup: '',
-      urgencyLevel: ''
+      urgencyLevel: '',
+      searchQuery: ''
     });
   };
 
@@ -179,6 +203,32 @@ const DonateBloodRequests = () => {
             {alert.message}
           </Alert>
         )}
+
+        {/* Search Bar */}
+        <Card className="mb-4 shadow-sm">
+          <Card.Body>
+            <InputGroup size="lg">
+              <InputGroup.Text>
+                <FaSearch className="text-danger" />
+              </InputGroup.Text>
+              <Form.Control
+                type="text"
+                placeholder="Search by hospital name, location, patient name, or medical reason..."
+                value={filters.searchQuery}
+                onChange={(e) => handleFilterChange('searchQuery', e.target.value)}
+                className="border-start-0"
+              />
+              {filters.searchQuery && (
+                <Button 
+                  variant="outline-secondary"
+                  onClick={() => handleFilterChange('searchQuery', '')}
+                >
+                  Clear
+                </Button>
+              )}
+            </InputGroup>
+          </Card.Body>
+        </Card>
 
         {/* Filters Section */}
         <Card className="mb-4 shadow-sm">
