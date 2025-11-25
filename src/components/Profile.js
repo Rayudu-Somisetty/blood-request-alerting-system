@@ -106,13 +106,17 @@ const Profile = () => {
       console.log('Requests result:', requestsResult);
 
       // Filter donations and requests for this user
-      const userDonations = donationsResult?.filter(donation => 
+      // The services return objects with { success, data, total }, so we need to access .data
+      const allDonations = donationsResult?.data || [];
+      const allRequests = requestsResult?.data || [];
+      
+      const userDonations = allDonations.filter(donation => 
         donation.donorId === user.uid || donation.email === user.email
-      ) || [];
+      );
 
-      const userRequests = requestsResult?.filter(request => 
+      const userRequests = allRequests.filter(request => 
         request.userId === user.uid || request.contactEmail === user.email
-      ) || [];
+      );
 
       console.log('User donations:', userDonations);
       console.log('User requests:', userRequests);
