@@ -54,17 +54,11 @@ class EmailOtpService {
    * Send OTP to email using EmailJS
    */
   async sendOTP(email) {
-    let otp = null;
-    
     try {
       this.init();
       
-      otp = this.generateOTP();
+      const otp = this.generateOTP();
       this.storeOTP(email, otp);
-      
-      // For development - show OTP in console
-      console.log('🔐 OTP Generated:', otp);
-      console.log('📧 Sending to:', email);
       
       // Try multiple template variable formats to match EmailJS template
       const templateParams = {
@@ -85,38 +79,22 @@ class EmailOtpService {
         subject: 'Your OTP for Blood Alert Registration'
       };
       
-      console.log('📤 Sending email with params:', templateParams);
-      
-      try {
-        await emailjs.send(
-          EMAILJS_CONFIG.serviceId,
-          EMAILJS_CONFIG.templateId,
-          templateParams
-        );
-        
-        console.log('✅ OTP email sent successfully');
-        
-        // Also show alert for backup
-        alert(`✅ OTP Sent!\n\nAn OTP has been sent to:\n${email}\n\nYour OTP: ${otp}\n\n(Also check your email inbox)`);
-        
-        return {
-          success: true,
-          message: 'OTP sent to your email'
-        };
-      } catch (emailError) {
-        console.error('EmailJS send error:', emailError);
-        throw emailError;
-      }
-    } catch (error) {
-      console.error('Error sending OTP:', error);
-      console.error('Error details:', error.text || error.message);
-      
-      // Show OTP in alert as fallback
-      alert(`⚠️ Email Delivery Issue\n\nYour OTP: ${otp}\n\nPlease use this OTP to continue.\n\nNote: Email delivery failed, but you can still register using the OTP above.`);
+      await emailjs.send(
+        EMAILJS_CONFIG.serviceId,
+        EMAILJS_CONFIG.templateId,
+        templateParams
+      );
       
       return {
         success: true,
-        message: 'OTP generated (please check the alert)'
+        message: 'OTP sent to your email'
+      };
+    } catch (error) {
+      console.error('Error sending OTP:', error);
+      
+      return {
+        success: false,
+        error: 'Failed to send OTP. Please try again.'
       };
     }
   }
