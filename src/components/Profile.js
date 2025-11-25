@@ -81,20 +81,29 @@ const Profile = () => {
 
   // Fetch user's actual donation and request data
   useEffect(() => {
+    console.log('Profile useEffect triggered, user:', user);
     if (user?.uid) {
+      console.log('User UID found:', user.uid);
       fetchUserData();
+    } else {
+      console.log('No user UID found, setting loading to false');
+      setLoading(false);
     }
   }, [user]);
 
   const fetchUserData = async () => {
     try {
       setLoading(true);
+      console.log('Fetching user data for:', user);
       
       // Fetch user's donations and requests
       const [donationsResult, requestsResult] = await Promise.all([
         firebaseService.getDonations(),
         firebaseService.getBloodRequests()
       ]);
+
+      console.log('Donations result:', donationsResult);
+      console.log('Requests result:', requestsResult);
 
       // Filter donations and requests for this user
       const userDonations = donationsResult?.filter(donation => 
@@ -105,11 +114,14 @@ const Profile = () => {
         request.userId === user.uid || request.contactEmail === user.email
       ) || [];
 
+      console.log('User donations:', userDonations);
+      console.log('User requests:', userRequests);
+
       setDonationHistory(userDonations);
       setRequestHistory(userRequests);
 
       // Update profile data with fresh user data from context
-      setProfileData({
+      const updatedProfileData = {
         name: getFullName(user),
         firstName: user?.firstName || '',
         lastName: user?.lastName || '',
@@ -138,7 +150,10 @@ const Profile = () => {
           reasons: user?.eligibilityReasons || [],
           nextEligibleDate: user?.nextEligibleDate || ''
         }
-      });
+      };
+      
+      console.log('Updated profile data:', updatedProfileData);
+      setProfileData(updatedProfileData);
 
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -260,9 +275,23 @@ const Profile = () => {
     <>
       <Navigation />
       <Container className="my-5">
+        {/* Loading State */}
+        {loading ? (
+          <div className="text-center py-5">
+            <div className="spinner-border text-danger" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+            <p className="mt-3">Loading your profile...</p>
+          </div>
+        ) : !user ? (
+          <div className="text-center py-5">
+            <i className="bi bi-exclamation-circle text-warning" style={{ fontSize: '3rem' }}></i>
+            <h5 className="mt-3">No User Data Available</h5>
+            <p className="text-muted">Please log in to view your profile.</p>
+          </div>
+        ) : (
         <Row>
-          <Col lg={4} className="mb-4">
-            {/* Profile Card */}
+          <Col lg={4} className="mb-4">{/* Profile Card */}
             <Card className="shadow-sm">
               <Card.Body className="text-center">
                 <div className="mb-3">
@@ -768,6 +797,7 @@ const Profile = () => {
             </Card>
           </Col>
         </Row>
+        )}
       </Container>
 
       {/* Edit Profile Modal */}
