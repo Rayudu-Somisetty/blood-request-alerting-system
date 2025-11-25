@@ -19,7 +19,6 @@ import Features from './components/Features';
 import Footer from './components/Footer';
 import Login from './components/Login';
 import Register from './components/Register';
-import UserDashboard from './components/UserDashboard';
 import Profile from './components/Profile';
 import Privacy from './components/Privacy';
 import AdminSetup from './components/AdminSetup';
@@ -127,8 +126,8 @@ const LandingRoute = ({ children }) => {
     return <Navigate to="/admin/dashboard" replace />;
   }
   
-  // Regular users go to main dashboard
-  return <Navigate to="/dashboard" replace />;
+  // Regular users go to profile (consolidated dashboard)
+  return <Navigate to="/profile" replace />;
 };
 
 // Main Website Page Components - All require authentication
@@ -175,14 +174,6 @@ const CampaignsPage = () => (
   </>
 );
 
-const DashboardPage = () => (
-  <>
-    <Navigation />
-    <UserDashboard />
-    <Footer />
-  </>
-);
-
 function App() {
   return (
     <AuthProvider>
@@ -202,7 +193,8 @@ function App() {
             <Route path="/campaigns" element={<AuthenticatedRoute><CampaignsPage /></AuthenticatedRoute>} />
             <Route path="/donate-blood" element={<AuthenticatedRoute><DonateBloodPage /></AuthenticatedRoute>} />
             <Route path="/request" element={<AuthenticatedRoute><RequestPage /></AuthenticatedRoute>} />
-            <Route path="/dashboard" element={<AuthenticatedRoute><DashboardPage /></AuthenticatedRoute>} />
+            {/* Redirect dashboard to profile (consolidated) */}
+            <Route path="/dashboard" element={<Navigate to="/profile" replace />} />
             
             {/* Unified Login Route */}
             <Route 
@@ -272,7 +264,7 @@ function App() {
             <Route path="/admin/*" element={<Navigate to="/admin/dashboard" replace />} />
             
             {/* Legacy routes redirect */}
-            <Route path="/user/dashboard" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/user/dashboard" element={<Navigate to="/profile" replace />} />
           </Routes>
           
           {/* Toast Notifications */}

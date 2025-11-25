@@ -100,9 +100,6 @@ const Navigation = () => {
                     </div>
                   </Dropdown.Toggle>
                   <Dropdown.Menu>
-                    <Dropdown.Item as={Link} to="/dashboard">
-                      <i className="bi bi-speedometer2 me-2"></i>My Dashboard
-                    </Dropdown.Item>
                     <Dropdown.Item as={Link} to="/profile">
                       <i className="bi bi-person me-2"></i>My Profile
                     </Dropdown.Item>
