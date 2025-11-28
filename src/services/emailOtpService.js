@@ -9,9 +9,9 @@ import emailjs from '@emailjs/browser';
 // EmailJS Configuration
 // Get these from https://www.emailjs.com/
 const EMAILJS_CONFIG = {
-  serviceId: 'service_x6w0we1',  // Replace with your EmailJS Service ID
-  templateId: 'template_1zjk4wx',        // Replace with your EmailJS Template ID
-  publicKey: 'tN0UVFVmqTlsBKk5J'       // Replace with your EmailJS Public Key
+  serviceId: 'service_z7pnlzb',  // Replace with your EmailJS Service ID
+  templateId: 'template_ehiogcl',        // Replace with your EmailJS Template ID
+  publicKey: 'o4CbxXd6NGTdF32Ds'       // Replace with your EmailJS Public Key
 };
 
 class EmailOtpService {
