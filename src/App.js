@@ -19,6 +19,7 @@ import Features from './components/Features';
 import Footer from './components/Footer';
 import Login from './components/Login';
 import Register from './components/Register';
+import ForgotPassword from './components/ForgotPassword';
 import Profile from './components/Profile';
 import Privacy from './components/Privacy';
 import AdminSetup from './components/AdminSetup';
@@ -214,6 +215,16 @@ function App() {
               element={
                 <PublicRoute>
                   <Register />
+                </PublicRoute>
+              } 
+            />
+            
+            {/* Forgot Password Route */}
+            <Route 
+              path="/forgot-password" 
+              element={
+                <PublicRoute>
+                  <ForgotPassword />
                 </PublicRoute>
               } 
             />
