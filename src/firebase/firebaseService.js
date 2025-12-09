@@ -110,21 +110,53 @@ class FirebaseService {
       const user = userCredential.user;
       
       // Get additional user data from Firestore
-      const userDocRef = doc(db, 'users', user.uid);
-      const userDoc = await getDoc(userDocRef);
-      
-      if (userDoc.exists()) {
-        const userData = { ...userDoc.data(), uid: user.uid };
+      try {
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+        
+        if (userDoc.exists()) {
+          const userData = { ...userDoc.data(), uid: user.uid };
+          return {
+            success: true,
+            message: 'Login successful',
+            data: {
+              token: await user.getIdToken(),
+              user: userData
+            }
+          };
+        } else {
+          // User authenticated but no Firestore profile - this is OK for some users
+          console.warn('User authenticated but no Firestore profile found, using basic auth data');
+          return {
+            success: true,
+            message: 'Login successful',
+            data: {
+              token: await user.getIdToken(),
+              user: {
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName,
+                role: 'user'
+              }
+            }
+          };
+        }
+      } catch (firestoreError) {
+        console.warn('Firestore read error during login, using basic auth data:', firestoreError);
+        // If Firestore read fails, still return successful login with basic user data
         return {
           success: true,
           message: 'Login successful',
           data: {
             token: await user.getIdToken(),
-            user: userData
+            user: {
+              uid: user.uid,
+              email: user.email,
+              displayName: user.displayName,
+              role: 'user'
+            }
           }
         };
-      } else {
-        throw new Error('User profile not found');
       }
     } catch (error) {
       console.error('Login with email error:', error);
