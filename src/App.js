@@ -22,6 +22,7 @@ import Register from './components/Register';
 import Profile from './components/Profile';
 import Privacy from './components/Privacy';
 import AdminSetup from './components/AdminSetup';
+import MyRequests from './components/MyRequests';
 
 // Admin Components
 import Layout from './admin-components/common/Layout';
@@ -193,6 +194,7 @@ function App() {
             <Route path="/campaigns" element={<AuthenticatedRoute><CampaignsPage /></AuthenticatedRoute>} />
             <Route path="/donate-blood" element={<AuthenticatedRoute><DonateBloodPage /></AuthenticatedRoute>} />
             <Route path="/request" element={<AuthenticatedRoute><RequestPage /></AuthenticatedRoute>} />
+            <Route path="/my-requests" element={<AuthenticatedRoute><MyRequests /></AuthenticatedRoute>} />
             {/* Redirect dashboard to profile (consolidated) */}
             <Route path="/dashboard" element={<Navigate to="/profile" replace />} />
             

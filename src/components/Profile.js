@@ -115,7 +115,9 @@ const Profile = () => {
       );
 
       const userRequests = allRequests.filter(request => 
-        request.userId === user.uid || request.contactEmail === user.email
+        request.requesterId === user.uid || 
+        request.userId === user.uid || 
+        request.contactEmail === user.email
       );
 
       console.log('User donations:', userDonations);
@@ -633,48 +635,92 @@ const Profile = () => {
                   <Tab eventKey="requests" title="Blood Requests">
                     <div className="d-flex justify-content-between align-items-center mb-3">
                       <h6>My Requests ({requestHistory.length})</h6>
-                      <Button 
-                        as={Link} 
-                        to="/request" 
-                        variant="warning" 
-                        size="sm"
-                      >
-                        <i className="bi bi-plus-circle me-2"></i>New Request
-                      </Button>
+                      <div className="d-flex gap-2">
+                        <Button 
+                          as={Link} 
+                          to="/my-requests" 
+                          variant="primary" 
+                          size="sm"
+                        >
+                          <i className="bi bi-eye me-2"></i>View Detailed Requests
+                        </Button>
+                        <Button 
+                          as={Link} 
+                          to="/request" 
+                          variant="warning" 
+                          size="sm"
+                        >
+                          <i className="bi bi-plus-circle me-2"></i>New Request
+                        </Button>
+                      </div>
                     </div>
                     {requestHistory.length > 0 ? (
-                      <Table responsive striped>
-                        <thead>
-                          <tr>
-                            <th>Date</th>
-                            <th>Blood Group</th>
-                            <th>Amount</th>
-                            <th>Hospital</th>
-                            <th>Status</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {requestHistory.map((request) => (
-                            <tr key={request.id}>
-                              <td>{request.date}</td>
-                              <td>
-                                <Badge bg={getBloodGroupBadgeColor(request.bloodGroup)}>
-                                  {request.bloodGroup}
-                                </Badge>
-                              </td>
-                              <td>{request.amount}</td>
-                              <td>{request.hospital}</td>
-                              <td>
-                                <Badge bg="success">{request.status}</Badge>
-                              </td>
+                      <>
+                        <Alert variant="info" className="mb-3">
+                          <strong>💡 Tip:</strong> Click "View Detailed Requests" to see donor responses and contact details for your blood requests.
+                        </Alert>
+                        <Table responsive striped>
+                          <thead>
+                            <tr>
+                              <th>Date</th>
+                              <th>Blood Group</th>
+                              <th>Units</th>
+                              <th>Hospital</th>
+                              <th>Status</th>
+                              <th>Donor Responses</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </Table>
+                          </thead>
+                          <tbody>
+                            {requestHistory.map((request) => {
+                              const acceptedDonors = (request.donorResponses || []).filter(r => r.response === 'accepted');
+                              const totalResponses = (request.donorResponses || []).length;
+                              return (
+                                <tr key={request.id}>
+                                  <td>
+                                    {request.createdAt ? 
+                                      (request.createdAt.toDate ? request.createdAt.toDate() : new Date(request.createdAt)).toLocaleDateString() 
+                                      : 'N/A'}
+                                  </td>
+                                  <td>
+                                    <Badge bg={getBloodGroupBadgeColor(request.bloodGroup)}>
+                                      {request.bloodGroup}
+                                    </Badge>
+                                  </td>
+                                  <td>{request.unitsRequired || 1}</td>
+                                  <td>{request.hospitalName || 'N/A'}</td>
+                                  <td>
+                                    <Badge bg={request.status === 'active' ? 'success' : 'secondary'}>
+                                      {request.status || 'active'}
+                                    </Badge>
+                                  </td>
+                                  <td>
+                                    {acceptedDonors.length > 0 ? (
+                                      <Badge bg="success" pill>
+                                        {acceptedDonors.length} accepted
+                                      </Badge>
+                                    ) : totalResponses > 0 ? (
+                                      <Badge bg="warning" pill>
+                                        {totalResponses} responses
+                                      </Badge>
+                                    ) : (
+                                      <Badge bg="secondary" pill>
+                                        No responses yet
+                                      </Badge>
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </Table>
+                      </>
                     ) : (
                       <div className="text-center py-4">
                         <i className="bi bi-inbox text-muted" style={{ fontSize: '3rem' }}></i>
                         <p className="text-muted mt-2">No blood requests yet</p>
+                        <Button as={Link} to="/request" variant="warning">
+                          <i className="bi bi-plus-circle me-2"></i>Submit Your First Request
+                        </Button>
                       </div>
                     )}
                   </Tab>

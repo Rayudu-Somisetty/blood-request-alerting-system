@@ -134,6 +134,10 @@ const UserDashboard = () => {
                       <i className="bi bi-heart-pulse-fill me-2"></i>
                       Request Blood
                     </Link>
+                    <Link to="/my-requests" className="btn btn-primary">
+                      <i className="bi bi-clipboard-check me-2"></i>
+                      My Requests
+                    </Link>
                     <Link to="/campaigns" className="btn btn-info">
                       <i className="bi bi-megaphone me-2"></i>
                       Join Campaign
