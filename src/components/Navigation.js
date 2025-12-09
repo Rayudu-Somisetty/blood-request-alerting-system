@@ -63,6 +63,9 @@ const Navigation = () => {
             <Nav.Link as={Link} to="/campaigns" active={location.pathname === "/campaigns"}>Campaigns</Nav.Link>
             <Nav.Link as={Link} to="/donate-blood" active={location.pathname === "/donate-blood"} className="text-danger">Donate Blood</Nav.Link>
             <Nav.Link as={Link} to="/request" active={location.pathname === "/request"} className="text-danger">Request Blood</Nav.Link>
+            {isAuthenticated && (
+              <Nav.Link as={Link} to="/my-requests" active={location.pathname === "/my-requests"} className="text-primary">My Requests</Nav.Link>
+            )}
             <Nav.Link as={Link} to="/about" active={location.pathname === "/about" || location.pathname === "/contact"}>About Us</Nav.Link>
             
             {/* Conditional Login/Profile Button */}

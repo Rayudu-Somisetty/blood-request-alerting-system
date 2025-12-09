@@ -46,7 +46,28 @@ const DonateBloodRequests = () => {
       
       if (result && result.data) {
         // Exclude requests made by current user
-        const otherRequests = result.data.filter(req => req.requesterId !== user?.uid);
+        let otherRequests = result.data.filter(req => req.requesterId !== user?.uid);
+        
+        // Filter out expired requests based on criticality
+        const now = new Date();
+        otherRequests = otherRequests.filter(req => {
+          const createdAt = req.createdAt?.toDate?.() || new Date(req.createdAt || 0);
+          const hoursElapsed = (now - createdAt) / (1000 * 60 * 60);
+          
+          // Expiration times based on urgency:
+          // Critical: 24 hours
+          // Urgent: 72 hours (3 days)
+          // Normal: 168 hours (7 days)
+          const expirationHours = {
+            'critical': 24,
+            'urgent': 72,
+            'normal': 168
+          };
+          
+          const maxHours = expirationHours[req.urgencyLevel] || 168;
+          return hoursElapsed < maxHours;
+        });
+        
         setRequests(otherRequests);
       }
     } catch (error) {
@@ -92,8 +113,20 @@ const DonateBloodRequests = () => {
       filtered = filtered.filter(req => req.urgencyLevel === filters.urgencyLevel);
     }
 
-    // Sort by urgency and date
+    // Sort by urgency, user response status, and date
     filtered.sort((a, b) => {
+      // Check if user has declined either request
+      const userResponseA = a.donorResponses?.find(r => r.donorId === user?.uid);
+      const userResponseB = b.donorResponses?.find(r => r.donorId === user?.uid);
+      
+      const hasDeclinedA = userResponseA?.response === 'declined';
+      const hasDeclinedB = userResponseB?.response === 'declined';
+      
+      // Move declined requests to the bottom
+      if (hasDeclinedA && !hasDeclinedB) return 1;
+      if (!hasDeclinedA && hasDeclinedB) return -1;
+      
+      // Then sort by urgency
       const urgencyOrder = { 'critical': 3, 'urgent': 2, 'normal': 1 };
       const urgencyA = urgencyOrder[a.urgencyLevel] || 1;
       const urgencyB = urgencyOrder[b.urgencyLevel] || 1;
@@ -102,6 +135,7 @@ const DonateBloodRequests = () => {
         return urgencyB - urgencyA;
       }
       
+      // Finally sort by date (newest first)
       const dateA = a.createdAt?.toDate?.() || new Date(a.createdAt || 0);
       const dateB = b.createdAt?.toDate?.() || new Date(b.createdAt || 0);
       return dateB - dateA;
@@ -184,6 +218,30 @@ const DonateBloodRequests = () => {
 
   const getUserResponse = (request) => {
     return request.donorResponses?.find(response => response.donorId === user?.uid);
+  };
+
+  const getTimeRemaining = (request) => {
+    const createdAt = request.createdAt?.toDate?.() || new Date(request.createdAt || 0);
+    const now = new Date();
+    const hoursElapsed = (now - createdAt) / (1000 * 60 * 60);
+    
+    const expirationHours = {
+      'critical': 24,
+      'urgent': 72,
+      'normal': 168
+    };
+    
+    const maxHours = expirationHours[request.urgencyLevel] || 168;
+    const remainingHours = Math.max(0, maxHours - hoursElapsed);
+    
+    if (remainingHours < 1) {
+      return { text: 'Less than 1 hour', urgent: true };
+    } else if (remainingHours < 24) {
+      return { text: `${Math.floor(remainingHours)} hours left`, urgent: remainingHours < 6 };
+    } else {
+      const days = Math.floor(remainingHours / 24);
+      return { text: `${days} day${days > 1 ? 's' : ''} left`, urgent: false };
+    }
   };
 
   return (
@@ -307,16 +365,22 @@ const DonateBloodRequests = () => {
               {filteredRequests.map((request) => {
                 const responded = hasUserResponded(request);
                 const userResponse = getUserResponse(request);
+                const timeRemaining = getTimeRemaining(request);
                 
                 return (
                   <Col lg={6} key={request.id} className="mb-4">
-                    <Card className="h-100 shadow-sm blood-request-card">
+                    <Card className={`h-100 shadow-sm blood-request-card ${userResponse?.response === 'declined' ? 'opacity-75' : ''}`}>
                       <Card.Header className={`d-flex justify-content-between align-items-center ${request.urgencyLevel === 'critical' ? 'bg-danger text-white' : 'bg-light'}`}>
                         <div className="d-flex align-items-center gap-2">
                           <FaTint className={request.urgencyLevel === 'critical' ? 'text-white' : 'text-danger'} />
                           <strong>Blood Needed: {request.bloodGroup}</strong>
                         </div>
-                        {getUrgencyBadge(request.urgencyLevel)}
+                        <div className="d-flex flex-column align-items-end gap-1">
+                          {getUrgencyBadge(request.urgencyLevel)}
+                          <Badge bg={timeRemaining.urgent ? 'danger' : 'secondary'} className="small">
+                            ⏱️ {timeRemaining.text}
+                          </Badge>
+                        </div>
                       </Card.Header>
                       <Card.Body>
                         <div className="mb-3">
