@@ -635,29 +635,19 @@ const Profile = () => {
                   <Tab eventKey="requests" title="Blood Requests">
                     <div className="d-flex justify-content-between align-items-center mb-3">
                       <h6>My Requests ({requestHistory.length})</h6>
-                      <div className="d-flex gap-2">
-                        <Button 
-                          as={Link} 
-                          to="/my-requests" 
-                          variant="primary" 
-                          size="sm"
-                        >
-                          <i className="bi bi-eye me-2"></i>View Detailed Requests
-                        </Button>
-                        <Button 
-                          as={Link} 
-                          to="/request" 
-                          variant="warning" 
-                          size="sm"
-                        >
-                          <i className="bi bi-plus-circle me-2"></i>New Request
-                        </Button>
-                      </div>
+                      <Button 
+                        as={Link} 
+                        to="/request" 
+                        variant="warning" 
+                        size="sm"
+                      >
+                        <i className="bi bi-plus-circle me-2"></i>New Request
+                      </Button>
                     </div>
                     {requestHistory.length > 0 ? (
                       <>
                         <Alert variant="info" className="mb-3">
-                          <strong>💡 Tip:</strong> Click "View Detailed Requests" to see donor responses and contact details for your blood requests.
+                          <strong>💡 Tip:</strong> When donors accept your request, you'll receive their contact details in your notifications.
                         </Alert>
                         <Table responsive striped>
                           <thead>

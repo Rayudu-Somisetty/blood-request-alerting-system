@@ -1196,9 +1196,11 @@ class FirebaseService {
       // Mark notification as responded
       await this.markNotificationAsResponded(requestId, donorId);
 
-      // If donor accepted, create notification for requester and delete the blood request notification
+      // If donor accepted, create notification for requester and reminder for donor
       if (response === 'accepted') {
         await this.notifyRequesterOfDonorAcceptance(requestData, donorResponse);
+        // Create reminder notification for donor
+        await this.createDonorReminderNotification(requestData, donorResponse);
         // Delete the blood request notification from donor's notifications
         await this.deleteBloodRequestNotification(requestId, donorId);
       }
@@ -1310,6 +1312,51 @@ Please contact the donor directly to coordinate the donation.`,
       return { id: docRef.id, ...notification };
     } catch (error) {
       console.error('Error notifying requester of donor acceptance:', error);
+      throw new Error(this.getErrorMessage(error));
+    }
+  }
+
+  async createDonorReminderNotification(requestData, donorResponse) {
+    try {
+      // Create notification for the donor as a reminder
+      const notification = {
+        type: 'donation_reminder',
+        title: '❤️ Blood Donation Reminder',
+        message: `Thank you for accepting to donate blood for ${requestData.patientName}!
+
+Request Details:
+🩸 Blood Group: ${requestData.bloodGroup}
+🏥 Hospital: ${requestData.hospitalName}
+📍 Location: ${requestData.city}
+⏰ Urgency: ${requestData.urgencyLevel}
+💉 Units Needed: ${requestData.unitsRequired}
+
+${requestData.contactPerson ? `Contact Person: ${requestData.contactPerson}` : ''}
+${requestData.contactNumber ? `Contact Number: ${requestData.contactNumber}` : ''}
+
+Please visit the hospital at your earliest convenience to complete the donation. Your contribution can save a life!`,
+        bloodRequestId: requestData.id || 'unknown',
+        userId: donorResponse.donorId,
+        urgencyLevel: requestData.urgencyLevel,
+        createdAt: serverTimestamp(),
+        read: false,
+        isGlobal: false, // Personal notification for the donor
+        requestDetails: {
+          patientName: requestData.patientName,
+          bloodGroup: requestData.bloodGroup,
+          hospitalName: requestData.hospitalName,
+          city: requestData.city,
+          urgencyLevel: requestData.urgencyLevel,
+          unitsRequired: requestData.unitsRequired,
+          contactPerson: requestData.contactPerson,
+          contactNumber: requestData.contactNumber
+        }
+      };
+
+      const docRef = await addDoc(collection(db, 'notifications'), notification);
+      return { id: docRef.id, ...notification };
+    } catch (error) {
+      console.error('Error creating donor reminder notification:', error);
       throw new Error(this.getErrorMessage(error));
     }
   }
