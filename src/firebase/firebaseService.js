@@ -822,6 +822,8 @@ class FirebaseService {
       let notifications = [];
       
       if (userId) {
+        console.log('🔍 Fetching notifications for userId:', userId);
+        
         // Query for user-specific and global notifications
         const userQuery = query(
           notificationsRef,
@@ -832,8 +834,12 @@ class FirebaseService {
         );
         
         const querySnapshot = await getDocs(userQuery);
+        console.log('📊 Query returned', querySnapshot.size, 'notifications');
+        
         querySnapshot.forEach((doc) => {
-          notifications.push({ id: doc.id, ...doc.data() });
+          const notifData = { id: doc.id, ...doc.data() };
+          console.log('📬 Notification:', doc.id, 'type:', notifData.type, 'userId:', notifData.userId);
+          notifications.push(notifData);
         });
       } else {
         // If no userId provided, get all notifications (admin only)
@@ -842,6 +848,8 @@ class FirebaseService {
           notifications.push({ id: doc.id, ...doc.data() });
         });
       }
+      
+      console.log('✅ Total notifications retrieved:', notifications.length);
       
       // Sort by createdAt (newest first)
       notifications.sort((a, b) => {
@@ -1105,6 +1113,7 @@ class FirebaseService {
 
       console.log(`Found ${compatibleDonors.length} compatible donors for blood group ${request.bloodGroup}`);
       console.log(`Requester ID: ${request.requesterId}`);
+      console.log(`Compatible donors:`, compatibleDonors.map(d => ({ id: d.id, uid: d.uid, bloodGroup: d.bloodGroup, email: d.email })));
 
       // Create notifications for each compatible donor
       const notifications = [];
@@ -1112,7 +1121,7 @@ class FirebaseService {
         const notificationMessage = getBloodRequestNotificationMessage(request, donor);
         
         const notification = {
-          userId: donor.id,
+          userId: donor.id, // This is the document ID which equals donor.uid
           type: 'blood_request',
           title: `🩸 Blood Donation Needed - ${request.bloodGroup}`,
           message: notificationMessage,
@@ -1129,6 +1138,7 @@ class FirebaseService {
           isGlobal: false
         };
 
+        console.log(`📧 Creating notification for donor ${donor.id} (${donor.email}) - Blood: ${donor.bloodGroup}`);
         notifications.push(notification);
       }
 

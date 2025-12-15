@@ -21,7 +21,11 @@ const BloodRequestNotifications = ({ show, onHide }) => {
   const loadNotifications = async () => {
     try {
       setLoading(true);
+      console.log('🔔 Loading notifications for user:', user.uid);
+      console.log('👤 User blood group:', user.bloodGroup);
+      
       const result = await firebaseService.getUserNotificationsWithDetails(user.uid);
+      console.log('📨 Received notifications result:', result);
       
       // Filter for blood request notifications only and sort by urgency and date
       const bloodRequestNotifications = result.data
@@ -42,6 +46,7 @@ const BloodRequestNotifications = ({ show, onHide }) => {
           return dateB - dateA;
         });
 
+      console.log('🩸 Blood request notifications count:', bloodRequestNotifications.length);
       setNotifications(bloodRequestNotifications);
     } catch (error) {
       console.error('Error loading notifications:', error);
