@@ -1098,8 +1098,6 @@ class FirebaseService {
         const isCompatibleBlood = compatibleBloodGroups.includes(userData.bloodGroup);
         const isRequester = userData.id === request.requesterId || userData.uid === request.requesterId;
         
-        console.log(`👤 Checking user: ${userData.email} | Blood: ${userData.bloodGroup} | Compatible: ${isCompatibleBlood} | Active: ${userData.isActive} | CanDonate: ${userData.canDonate} | IsRequester: ${isRequester}`);
-        
         // Check if user has compatible blood group and can donate
         // EXCLUDE the requester from receiving notifications about their own request
         if (compatibleBloodGroups.includes(userData.bloodGroup) &&
@@ -1108,9 +1106,8 @@ class FirebaseService {
             userData.bloodGroup && // Must have blood group specified
             !isRequester) { // Don't notify the person who made the request
           compatibleDonors.push(userData);
-          console.log(`✅ Added ${userData.email} as compatible donor`);
         } else if (isRequester && isCompatibleBlood) {
-          console.log(`❌ Excluding requester from notifications: ${userData.id} (matches requesterId: ${request.requesterId})`);
+          console.log(`Excluding requester from notifications: ${userData.id} (matches requesterId: ${request.requesterId})`);
         }
       });
 
