@@ -76,8 +76,9 @@ service cloud.firestore {
       // Users can update their own notifications (mark as read)
       allow update: if isAuthenticated() && 
                        (resource.data.userId == request.auth.uid || isAdmin());
-      // Only admins can delete notifications
-      allow delete: if isAdmin();
+      // Users can delete their own notifications, admins can delete any
+      allow delete: if isAuthenticated() && 
+                       (resource.data.userId == request.auth.uid || isAdmin());
     }
 
     // For development and testing - remove in production
