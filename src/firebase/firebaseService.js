@@ -1312,8 +1312,8 @@ class FirebaseService {
   async notifyRequesterOfDonorAcceptance(requestData, donorResponse) {
     try {
       // Create notification for the requester (if they have a user account)
-      // For now, we'll create an admin notification since requests might come from non-users
       const notification = {
+        userId: requestData.requesterId || null, // Send to the person who made the request
         type: 'donor_accepted',
         title: '🎉 Donor Found for Blood Request',
         message: `Great news! ${donorResponse.donorName} (${donorResponse.donorBloodGroup}) has accepted to donate blood for ${requestData.patientName}.
@@ -1334,7 +1334,7 @@ Please contact the donor directly to coordinate the donation.`,
         urgencyLevel: requestData.urgencyLevel,
         createdAt: serverTimestamp(),
         read: false,
-        isGlobal: true, // Make it visible to admins
+        isGlobal: !requestData.requesterId, // Only global if no requester ID
         contactDetails: {
           donorName: donorResponse.donorName,
           donorEmail: donorResponse.donorEmail,
@@ -1344,6 +1344,7 @@ Please contact the donor directly to coordinate the donation.`,
       };
 
       const docRef = await addDoc(collection(db, 'notifications'), notification);
+      console.log('✅ Created donor acceptance notification for requester:', requestData.requesterId);
       return { id: docRef.id, ...notification };
     } catch (error) {
       console.error('Error notifying requester of donor acceptance:', error);

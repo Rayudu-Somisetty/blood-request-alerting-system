@@ -27,7 +27,8 @@ const BloodRequestNotifications = ({ show, onHide }) => {
       const result = await firebaseService.getUserNotificationsWithDetails(user.uid);
       console.log('📨 Received notifications result:', result);
       
-      // Filter for blood request notifications only and sort by urgency and date
+      // Filter for blood request notifications only
+      // Skip donor_accepted notifications as they don't have the required fields for display
       const bloodRequestNotifications = result.data
         .filter(notification => notification.type === 'blood_request')
         .sort((a, b) => {
@@ -47,6 +48,7 @@ const BloodRequestNotifications = ({ show, onHide }) => {
         });
 
       console.log('🩸 Blood request notifications count:', bloodRequestNotifications.length);
+      console.log('📋 All notification types:', result.data.map(n => ({ id: n.id, type: n.type, userId: n.userId })));
       setNotifications(bloodRequestNotifications);
     } catch (error) {
       console.error('Error loading notifications:', error);
