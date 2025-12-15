@@ -95,11 +95,7 @@ const LiveStats = () => {
   return (
     <div className="live-stats py-4 bg-danger text-white">
       <Container>
-        <Row className="text-center">
-          <Col md={6}>
-            <h3 className="display-4 fw-bold">{stats.unitsThisMonth}</h3>
-            <p className="display-4 fw">Units Donated This Month</p>
-          </Col>
+        <Row className="text-center justify-content-center">
           <Col md={6}>
             <h3 className="display-4 fw-bold">{stats.activeUsers}</h3>
             <p className="display-4 fw">Active Users</p>

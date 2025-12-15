@@ -50,6 +50,18 @@
   transform: translateY(-1px);
 }
 
+.delete-notification-btn {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.delete-notification-btn:hover {
+  background-color: #dc3545;
+  color: white;
+  transform: scale(1.1);
+}
+
 .compatibility-badge {
   background: linear-gradient(45deg, #28a745, #20c997);
   color: white;

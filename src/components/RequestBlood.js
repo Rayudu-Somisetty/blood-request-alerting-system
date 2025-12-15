@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Form, Button, Card, Alert, Spinner } from 'react-bootstrap';
 import { FaHandHoldingMedical, FaUser, FaPhone, FaEnvelope, FaUpload, FaHospital } from 'react-icons/fa';
 import firebaseService from '../firebase/firebaseService';
+import { useAuth } from '../context/AuthContext';
 import './RequestBlood.css';
 
 const RequestBlood = () => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     patientName: '',
     age: 18,
@@ -22,6 +24,21 @@ const RequestBlood = () => {
 
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState({ show: false, type: '', message: '' });
+
+  // Auto-fill form with logged-in user data
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        patientName: user.fullName || user.name || prev.patientName,
+        age: user.age || prev.age,
+        gender: user.gender || prev.gender,
+        bloodGroup: user.bloodGroup || prev.bloodGroup,
+        phone: user.phone || prev.phone,
+        email: user.email || prev.email
+      }));
+    }
+  }, [user]);
 
   const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
   const urgencyLevels = [
@@ -212,17 +229,6 @@ const RequestBlood = () => {
                     <Col md={6}>
                       <Form.Group className="mb-3">
                         <Form.Label>Patient Age *</Form.Label>
-                        <Form.Range
-                          name="age"
-                          min="0"
-                          max="100"
-                          value={formData.age}
-                          onChange={handleChange}
-                          className="age-slider mb-2"
-                        />
-                        <div className="age-display mb-2">
-                          <span className="age-value">{formData.age} years</span>
-                        </div>
                         <Form.Control
                           type="number"
                           name="age"

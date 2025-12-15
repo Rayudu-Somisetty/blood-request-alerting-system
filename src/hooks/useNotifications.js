@@ -106,6 +106,26 @@ export const useNotifications = () => {
     }
   };
 
+  const deleteNotification = async (notificationId) => {
+    try {
+      if (firebaseService) {
+        await firebaseService.deleteNotification(notificationId);
+      }
+      
+      // Update local state
+      setNotifications(prev => prev.filter(notification => notification.id !== notificationId));
+      
+      // Update unread count if the deleted notification was unread
+      const deletedNotification = notifications.find(n => n.id === notificationId);
+      if (deletedNotification && !deletedNotification.read) {
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
+    } catch (error) {
+      console.error('Failed to delete notification:', error);
+      throw error;
+    }
+  };
+
   const refreshNotifications = () => {
     loadNotifications();
   };
@@ -120,6 +140,7 @@ export const useNotifications = () => {
     unreadCount,
     markAsRead,
     markAllAsRead,
+    deleteNotification,
     refreshNotifications
   };
 };

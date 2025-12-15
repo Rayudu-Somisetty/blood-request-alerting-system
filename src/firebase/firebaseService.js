@@ -1274,6 +1274,20 @@ class FirebaseService {
     }
   }
 
+  async deleteNotification(notificationId) {
+    try {
+      const notificationRef = doc(db, 'notifications', notificationId);
+      await deleteDoc(notificationRef);
+      return { 
+        success: true, 
+        message: 'Notification deleted successfully' 
+      };
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+      throw new Error(this.getErrorMessage(error));
+    }
+  }
+
   async notifyRequesterOfDonorAcceptance(requestData, donorResponse) {
     try {
       // Create notification for the requester (if they have a user account)

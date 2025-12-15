@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Card, Badge, Alert, Spinner, Form } from 'react-bootstrap';
-import { FaBell, FaTint, FaHeart, FaPhone, FaEnvelope, FaHospital } from 'react-icons/fa';
+import { FaBell, FaTint, FaHeart, FaPhone, FaEnvelope, FaHospital, FaTrash } from 'react-icons/fa';
 import firebaseService from '../firebase/firebaseService';
 import { useAuth } from '../context/AuthContext';
 import './BloodRequestNotifications.css';
@@ -82,6 +82,23 @@ const BloodRequestNotifications = ({ show, onHide }) => {
     }
   };
 
+  const handleDeleteNotification = async (notificationId) => {
+    if (!window.confirm('Are you sure you want to delete this notification?')) {
+      return;
+    }
+
+    try {
+      await firebaseService.deleteNotification(notificationId);
+      showAlert('success', 'Notification deleted successfully');
+      
+      // Remove from local state
+      setNotifications(prev => prev.filter(n => n.id !== notificationId));
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+      showAlert('danger', 'Failed to delete notification. Please try again.');
+    }
+  };
+
   const getUrgencyBadge = (urgencyLevel) => {
     const urgencyConfig = {
       'critical': { variant: 'danger', icon: '🚨', text: 'CRITICAL' },
@@ -159,7 +176,18 @@ const BloodRequestNotifications = ({ show, onHide }) => {
                         <span className="fw-bold">Blood Needed: {notification.recipientBloodGroup}</span>
                         <span className={compatibility.className}>({compatibility.text})</span>
                       </div>
-                      {getUrgencyBadge(notification.urgencyLevel)}
+                      <div className="d-flex align-items-center gap-2">
+                        {getUrgencyBadge(notification.urgencyLevel)}
+                        <Button
+                          variant="outline-danger"
+                          size="sm"
+                          className="delete-notification-btn"
+                          onClick={() => handleDeleteNotification(notification.id)}
+                          title="Delete notification"
+                        >
+                          <FaTrash />
+                        </Button>
+                      </div>
                     </div>
 
                     <div className="row mb-3">

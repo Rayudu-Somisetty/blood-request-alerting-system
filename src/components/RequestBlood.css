@@ -26,10 +26,12 @@
     border-radius: 15px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     background: white;
+    overflow: visible;
 }
 
 .request-form-card .card-body {
     padding: 3rem;
+    overflow: visible;
 }
 
 .form-label {
@@ -49,38 +51,6 @@
 .form-control:focus, .form-select:focus {
     border-color: #dc3545;
     box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
-}
-
-.age-slider {
-    margin: 1rem 0;
-}
-
-.age-slider::-webkit-slider-thumb {
-    background: #dc3545;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-}
-
-.age-slider::-moz-range-thumb {
-    background: #dc3545;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-}
-
-.age-display {
-    text-align: center;
-    margin-top: 0.5rem;
-}
-
-.age-value {
-    background: #dc3545;
-    color: white;
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-weight: 600;
-    font-size: 0.9rem;
 }
 
 .request-btn {
