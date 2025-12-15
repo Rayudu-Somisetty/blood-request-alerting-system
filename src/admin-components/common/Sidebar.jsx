@@ -28,12 +28,6 @@ const Sidebar = ({ collapsed, onToggle }) => {
       icon: 'bi-heart',
       label: 'Donations',
       active: location.pathname === '/admin/blood-donations'
-    },
-    {
-      path: '/admin/blood-drives',
-      icon: 'bi-calendar-event',
-      label: 'Blood Campaigns',
-      active: location.pathname === '/admin/blood-drives'
     }
   ];
 

@@ -18,7 +18,10 @@ import {
   getDocs, 
   addDoc, 
   serverTimestamp,
-  writeBatch
+  writeBatch,
+  query,
+  where,
+  or
 } from 'firebase/firestore';
 import { auth, db } from './config';
 
@@ -816,20 +819,28 @@ class FirebaseService {
   async getNotifications(userId = null) {
     try {
       const notificationsRef = collection(db, 'notifications');
-      
-      // Get all notifications
-      const querySnapshot = await getDocs(notificationsRef);
       let notifications = [];
       
-      querySnapshot.forEach((doc) => {
-        notifications.push({ id: doc.id, ...doc.data() });
-      });
-      
-      // Filter by user if specified
       if (userId) {
-        notifications = notifications.filter(notification => 
-          notification.userId === userId || notification.isGlobal === true
+        // Query for user-specific and global notifications
+        const userQuery = query(
+          notificationsRef,
+          or(
+            where('userId', '==', userId),
+            where('isGlobal', '==', true)
+          )
         );
+        
+        const querySnapshot = await getDocs(userQuery);
+        querySnapshot.forEach((doc) => {
+          notifications.push({ id: doc.id, ...doc.data() });
+        });
+      } else {
+        // If no userId provided, get all notifications (admin only)
+        const querySnapshot = await getDocs(notificationsRef);
+        querySnapshot.forEach((doc) => {
+          notifications.push({ id: doc.id, ...doc.data() });
+        });
       }
       
       // Sort by createdAt (newest first)

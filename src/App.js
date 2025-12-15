@@ -10,7 +10,6 @@ import './admin-styles/theme.css';
 import Navigation from './components/Navigation';
 import Hero from './components/Hero';
 import AboutContact from './components/AboutContact';
-import Campaigns from './components/Campaigns';
 import RequestBlood from './components/RequestBlood';
 import DonateBloodRequests from './components/DonateBloodRequests';
 import QuickLinks from './components/QuickLinks';
@@ -31,7 +30,6 @@ import Dashboard from './admin-pages/Dashboard';
 import Users from './admin-pages/Users';
 import BloodRequests from './admin-pages/BloodRequests';
 import BloodDonations from './admin-pages/BloodDonations';
-import BloodDrives from './admin-pages/BloodDrives';
 import Inventory from './admin-pages/Inventory';
 import Requirements from './admin-pages/Requirements';
 import Notifications from './admin-pages/Notifications';
@@ -167,14 +165,6 @@ const DonateBloodPage = () => (
   </>
 );
 
-const CampaignsPage = () => (
-  <>
-    <Navigation />
-    <Campaigns />
-    <Footer />
-  </>
-);
-
 function App() {
   return (
     <AuthProvider>
@@ -191,7 +181,6 @@ function App() {
             <Route path="/home" element={<AuthenticatedRoute><HomePage /></AuthenticatedRoute>} />
             <Route path="/about" element={<AuthenticatedRoute><AboutContactPage /></AuthenticatedRoute>} />
             <Route path="/contact" element={<AuthenticatedRoute><AboutContactPage /></AuthenticatedRoute>} />
-            <Route path="/campaigns" element={<AuthenticatedRoute><CampaignsPage /></AuthenticatedRoute>} />
             <Route path="/donate-blood" element={<AuthenticatedRoute><DonateBloodPage /></AuthenticatedRoute>} />
             <Route path="/request" element={<AuthenticatedRoute><RequestPage /></AuthenticatedRoute>} />
             {/* Redirect dashboard to profile (consolidated) */}
@@ -263,7 +252,6 @@ function App() {
               <Route path="users" element={<Users />} />
               <Route path="blood-requests" element={<BloodRequests />} />
               <Route path="blood-donations" element={<BloodDonations />} />
-              <Route path="blood-drives" element={<BloodDrives />} />
               <Route path="inventory" element={<Inventory />} />
               <Route path="requirements" element={<Requirements />} />
               <Route path="notifications" element={<Notifications />} />

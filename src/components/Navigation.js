@@ -60,7 +60,6 @@ const Navigation = () => {
           <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="ms-auto">
             <Nav.Link as={Link} to="/home" active={location.pathname === "/home"}>Home</Nav.Link>
-            <Nav.Link as={Link} to="/campaigns" active={location.pathname === "/campaigns"}>Campaigns</Nav.Link>
             <Nav.Link as={Link} to="/donate-blood" active={location.pathname === "/donate-blood"} className="text-danger">Donate Blood</Nav.Link>
             <Nav.Link as={Link} to="/request" active={location.pathname === "/request"} className="text-danger">Request Blood</Nav.Link>
             <Nav.Link as={Link} to="/about" active={location.pathname === "/about" || location.pathname === "/contact"}>About Us</Nav.Link>
