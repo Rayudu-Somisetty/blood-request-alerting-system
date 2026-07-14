@@ -175,7 +175,7 @@ export const isValidBloodGroup = (bloodGroup) => {
   return validBloodGroups.includes(bloodGroup);
 };
 
-export default {
+const bloodCompatibilityUtils = {
   getCompatibleDonorBloodGroups,
   isBloodCompatible,
   getCompatibleRecipientBloodGroups,
@@ -185,3 +185,5 @@ export default {
   getBloodRequestNotificationMessage,
   isValidBloodGroup
 };
+
+export default bloodCompatibilityUtils;

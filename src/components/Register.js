@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
-import firebaseService from '../firebase/firebaseService';
 import emailVerificationService from '../firebase/emailVerificationService';
 
 import { Container, Row, Col, Card, Form, Button, Spinner } from 'react-bootstrap';
@@ -16,8 +15,6 @@ const Register = () => {
   const [step, setStep] = useState(1); // 1: Form, 2: OTP Verification
   const [registrationData, setRegistrationData] = useState(null);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
-  const [emailVerificationSent, setEmailVerificationSent] = useState(false);
-  const [verificationChecking, setVerificationChecking] = useState(false);
 
   const [resendTimer, setResendTimer] = useState(0);
   const [otpSent, setOtpSent] = useState(false);
@@ -55,7 +52,7 @@ const Register = () => {
     if (step === 2 && registrationData && !otpSent) {
       handleSendEmailVerification();
     }
-  }, [step, registrationData, otpSent]);
+  }, [step, registrationData, otpSent, handleSendEmailVerification]);
 
   // Resend timer effect
   useEffect(() => {

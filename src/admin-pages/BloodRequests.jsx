@@ -212,7 +212,7 @@ const BloodRequests = () => {
     if (!loading && requests.length > 0) {
       deleteOldRequests();
     }
-  }, [loading]);
+  }, [loading, deleteOldRequests, requests.length]);
 
   const handleAction = (requestId, action) => {
     setRequests(requests.map(req => 

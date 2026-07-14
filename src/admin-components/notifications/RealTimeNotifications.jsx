@@ -3,7 +3,6 @@ import './RealTimeNotifications.css';
 
 const RealTimeNotifications = () => {
   const [notifications, setNotifications] = useState([]);
-  const isConnected = false;
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const markAsRead = (notificationId) => {
@@ -20,24 +19,6 @@ const RealTimeNotifications = () => {
 
   const formatTimestamp = (timestamp) => {
     return new Date(timestamp).toLocaleTimeString();
-  };
-
-  const getNotificationIcon = (type) => {
-    switch (type) {
-      case 'donation_request':
-        return '📋';
-      case 'blood_request':
-        return '🩸';
-      default:
-        return '🔔';
-    }
-  };
-
-  const getNotificationClass = (notification) => {
-    let className = 'notification-item';
-    if (!notification.read) className += ' unread';
-    if (notification.urgency === 'high') className += ' urgent';
-    return className;
   };
 
   const toggleExpanded = (notificationIndex) => {

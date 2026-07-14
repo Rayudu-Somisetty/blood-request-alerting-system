@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Container, Row, Col, Card, Badge, Button, Form, Alert, Spinner, InputGroup } from 'react-bootstrap';
-import { FaTint, FaHospital, FaMapMarkerAlt, FaCalendarAlt, FaHeart, FaFilter, FaSearch } from 'react-icons/fa';
+import { FaTint, FaHospital, FaCalendarAlt, FaHeart, FaFilter, FaSearch } from 'react-icons/fa';
 import firebaseService from '../firebase/firebaseService';
 import { useAuth } from '../context/AuthContext';
 import './DonateBloodRequests.css';
@@ -33,11 +33,12 @@ const DonateBloodRequests = () => {
     // Refresh every 30 seconds
     const interval = setInterval(loadBloodRequests, 30000);
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     applyFilters();
-  }, [requests, filters]);
+  }, [requests, filters, applyFilters]);
 
   const loadBloodRequests = async () => {
     try {

@@ -1,27 +1,31 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
-import RealTimeNotifications from '../admin-components/notifications/RealTimeNotifications';
-import firebaseService from '../firebase/firebaseService';
+import { toast } from 'react-toastify';
+import { AdminPermissions } from '../utils/adminPermissions';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
+} from 'chart.js';
+import { Line, Bar, Doughnut } from 'react-chartjs-2';
 
 const Dashboard = () => {
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  const [stats, setStats] = useState({
-    totalUsers: 0,
-    totalDonations: 0,
-    pendingRequests: 0,
-    emergencyRequests: 0,
+  const { user, firebaseService } = useAuth();
+  const [dashboardData, setDashboardData] = useState({
+    stats: {},
     emergencyDetails: [],
     recentActivity: []
   });
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -127,6 +131,10 @@ const Dashboard = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
   const calculateTimeRemaining = (requiredDate) => {
     if (!requiredDate) return 'Unknown';

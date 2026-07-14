@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Navbar, Nav, Container, Dropdown, Badge } from 'react-bootstrap';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { FaBell } from 'react-icons/fa';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
-import firebaseService from '../firebase/firebaseService';
-import BloodRequestNotifications from './BloodRequestNotifications';
+import { AdminPermissions } from '../utils/adminPermissions';
 import './Navigation.css';
 
 const Navigation = () => {
@@ -14,16 +12,7 @@ const Navigation = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      loadNotificationCount();
-      // Set up real-time updates every 30 seconds
-      const interval = setInterval(loadNotificationCount, 30000);
-      return () => clearInterval(interval);
-    }
-  }, [isAuthenticated, user]);
-
-  const loadNotificationCount = async () => {
+  const loadNotificationCount = useCallback(async () => {
     try {
       const result = await firebaseService.getNotifications(user.uid);
       const bloodRequestNotifications = result.data
@@ -36,7 +25,16 @@ const Navigation = () => {
     } catch (error) {
       console.error('Error loading notification count:', error);
     }
-  };
+  }, [firebaseService, user.uid]);
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      loadNotificationCount();
+      // Set up real-time updates every 30 seconds
+      const interval = setInterval(loadNotificationCount, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [isAuthenticated, user, loadNotificationCount]);
 
   const handleLogout = async () => {
     await logout();

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Card, Badge, Alert, Spinner, Form } from 'react-bootstrap';
-import { FaBell, FaTint, FaHeart, FaPhone, FaEnvelope, FaHospital, FaTrash } from 'react-icons/fa';
+import { Modal, Button, Card, Badge, Alert, Spinner } from 'react-bootstrap';
+import { FaBell, FaTint, FaHeart, FaHospital, FaTrash } from 'react-icons/fa';
 import firebaseService from '../firebase/firebaseService';
 import { useAuth } from '../context/AuthContext';
 import './BloodRequestNotifications.css';
@@ -16,7 +16,7 @@ const BloodRequestNotifications = ({ show, onHide }) => {
     if (show && user) {
       loadNotifications();
     }
-  }, [show, user]);
+  }, [show, user, loadNotifications]);
 
   const loadNotifications = async () => {
     try {

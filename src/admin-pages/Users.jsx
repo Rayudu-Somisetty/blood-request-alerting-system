@@ -215,27 +215,6 @@ const Users = () => {
   const handleSaveNewUser = async (e) => {
     e.preventDefault();
     try {
-      const newUserData = {
-        firstName: editFormData.firstName,
-        lastName: editFormData.lastName,
-        name: `${editFormData.firstName} ${editFormData.lastName}`,
-        fullName: `${editFormData.firstName} ${editFormData.lastName}`,
-        email: editFormData.email,
-        phone: editFormData.phone,
-        bloodGroup: editFormData.bloodGroup,
-        status: editFormData.status,
-        location: editFormData.city,
-        city: editFormData.city,
-        state: editFormData.state,
-        address: editFormData.address,
-        userType: 'donor',
-        role: 'user',
-        totalDonations: 0,
-        isActive: true,
-        isVerified: false
-      };
-      
-      // Note: This would need a proper user creation method
       toast.info('Please use the registration page to create new users');
       setShowAddModal(false);
     } catch (error) {

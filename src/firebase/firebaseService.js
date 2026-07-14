@@ -804,8 +804,6 @@ class FirebaseService {
       }
 
       // Get admin to delete
-      const adminToDelete = await this.getUserById(adminId);
-
       const adminDocRef = doc(db, 'users', adminId);
       await deleteDoc(adminDocRef);
       return { success: true };

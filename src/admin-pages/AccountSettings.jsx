@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import { AdminPermissions } from '../utils/adminPermissions';
@@ -22,11 +22,7 @@ const AccountSettings = () => {
         confirmPassword: ''
     });
 
-    useEffect(() => {
-        loadAdminUsers();
-    }, []);
-
-    const loadAdminUsers = async () => {
+    const loadAdminUsers = useCallback(async () => {
         try {
             setLoading(true);
             const result = await firebaseService.getAdminUsers();
@@ -39,7 +35,11 @@ const AccountSettings = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [firebaseService]);
+
+    useEffect(() => {
+        loadAdminUsers();
+    }, [loadAdminUsers]);
 
     const handleAddAdmin = async (e) => {
         e.preventDefault();

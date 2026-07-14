@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 const Requirements = () => {
-  const [requirements, setRequirements] = useState([]);
+  const [requirements, setRequirements] = useState([]); // eslint-disable-line no-unused-vars
 
   const getUrgencyColor = (urgency) => {
     switch (urgency) {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Container, Row, Col, Card, Button, Tab, Tabs, Badge, Table, Modal, Form, Alert } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -79,19 +79,7 @@ const Profile = () => {
   const [requestHistory, setRequestHistory] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch user's actual donation and request data
-  useEffect(() => {
-    console.log('Profile useEffect triggered, user:', user);
-    if (user?.uid) {
-      console.log('User UID found:', user.uid);
-      fetchUserData();
-    } else {
-      console.log('No user UID found, setting loading to false');
-      setLoading(false);
-    }
-  }, [user]);
-
-  const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
     try {
       setLoading(true);
       console.log('Fetching user data for:', user);
@@ -167,6 +155,18 @@ const Profile = () => {
       setLoading(false);
     }
   };
+
+  // Fetch user's actual donation and request data
+  useEffect(() => {
+    console.log('Profile useEffect triggered, user:', user);
+    if (user?.uid) {
+      console.log('User UID found:', user.uid);
+      fetchUserData();
+    } else {
+      console.log('No user UID found, setting loading to false');
+      setLoading(false);
+    }
+  }, [user, fetchUserData]);
 
   useEffect(() => {
     // Initialize edit form with current profile data
