@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import firebaseService from '../firebase/firebaseService';
+import { auth } from '../firebase/config';
+import emailVerificationService from '../firebase/emailVerificationService';
 
 const AuthContext = createContext();
 
@@ -65,6 +67,22 @@ export const AuthProvider = ({ children }) => {
       const response = await firebaseService.loginWithEmail(credentials.email, credentials.password);
       
       if (response.success) {
+        // Double check email verification status
+        const currentUser = auth.currentUser;
+        if (currentUser && !currentUser.emailVerified) {
+          try {
+            await emailVerificationService.sendVerificationEmail();
+            toast.warning("Your email is not verified yet. We've sent a new verification link to your inbox. Please check your mail.");
+          } catch (resendError) {
+            console.error('Failed to auto-resend verification email:', resendError);
+            toast.warning('Your email address is not verified yet. Please check your inbox for the verification link.');
+          }
+          await firebaseService.logout();
+          setUser(null);
+          setIsAuthenticated(false);
+          return { success: false, error: 'Email not verified' };
+        }
+
         setUser(response.data.user);
         setIsAuthenticated(true);
         toast.success(response.message || 'Login successful!');

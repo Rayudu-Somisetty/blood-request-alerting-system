@@ -29,7 +29,8 @@ class FirebaseService {
   // Authentication Methods
   async login(email, password) {
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const normalizedEmail = email.toLowerCase().trim();
+      const userCredential = await signInWithEmailAndPassword(auth, normalizedEmail, password);
       const user = userCredential.user;
 
       // Get additional user data from Firestore
@@ -57,7 +58,8 @@ class FirebaseService {
 
   async loginWithEmail(email, password) {
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const normalizedEmail = email.toLowerCase().trim();
+      const userCredential = await signInWithEmailAndPassword(auth, normalizedEmail, password);
       const user = userCredential.user;
 
       // Get additional user data from Firestore
@@ -117,15 +119,16 @@ class FirebaseService {
   async register(userData) {
     try {
       const { email, password, ...profileData } = userData;
+      const normalizedEmail = email.toLowerCase().trim();
 
       // Create Firebase Auth account using the user's real email
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, normalizedEmail, password);
       const user = userCredential.user;
 
       // Create user profile in Firestore
       const userProfile = {
         ...profileData,
-        email: email,
+        email: normalizedEmail,
         uid: user.uid,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -257,14 +260,37 @@ class FirebaseService {
 
   async resetPassword(email) {
     try {
+      if (!email) {
+        throw new Error('Email address is required');
+      }
+
+      // Check if user exists in Firestore first (to bypass silent success of email enumeration protection)
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where('email', '==', email.trim()));
+      const querySnapshot = await getDocs(q);
+      
+      let userFound = !querySnapshot.empty;
+      
+      // Fallback check with lowercase email if not found
+      if (!userFound) {
+        const qLower = query(usersRef, where('email', '==', email.toLowerCase().trim()));
+        const querySnapshotLower = await getDocs(qLower);
+        userFound = !querySnapshotLower.empty;
+      }
+      
+      if (!userFound) {
+        throw new Error('This email is not registered. Please create an account first.');
+      }
+
       // Firebase Auth accounts now use real emails, so we can send directly.
-      await sendPasswordResetEmail(auth, email);
+      await sendPasswordResetEmail(auth, email.trim());
       return { success: true };
     } catch (error) {
       console.error('Reset password error:', error);
-      throw new Error(this.getErrorMessage(error));
+      throw new Error(error.message || this.getErrorMessage(error));
     }
   }
+
 
   // Phone Authentication Support Methods
   async createUserProfile(uid, profileData) {

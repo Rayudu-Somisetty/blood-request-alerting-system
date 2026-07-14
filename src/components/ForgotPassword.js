@@ -7,6 +7,7 @@ import firebaseService from '../firebase/firebaseService';
 const ForgotPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [notRegisteredError, setNotRegisteredError] = useState(false);
   
   const {
     register,
@@ -17,6 +18,7 @@ const ForgotPassword = () => {
 
   const onSubmit = async (data) => {
     setIsLoading(true);
+    setNotRegisteredError(false);
     
     try {
       await firebaseService.resetPassword(data.email);
@@ -24,6 +26,9 @@ const ForgotPassword = () => {
       toast.success('Password reset email sent! Check your inbox.');
     } catch (error) {
       console.error('Password reset error:', error);
+      if (error.message && error.message.includes('not registered')) {
+        setNotRegisteredError(true);
+      }
       toast.error(error.message || 'Failed to send reset email. Please try again.');
     } finally {
       setIsLoading(false);
@@ -53,6 +58,19 @@ const ForgotPassword = () => {
                     <p className="text-muted text-center mb-4">
                       Enter your email address and we'll send you a link to reset your password.
                     </p>
+                    
+                    {notRegisteredError && (
+                      <div className="alert alert-warning border border-warning shadow-sm mb-4 d-flex flex-column align-items-center text-center p-3">
+                        <i className="bi bi-person-exclamation text-warning mb-2" style={{ fontSize: '2rem' }}></i>
+                        <h6 className="fw-bold mb-1 text-dark">Account Not Found</h6>
+                        <p className="small text-muted mb-3">
+                          The email address you entered is not registered in our system yet.
+                        </p>
+                        <Link to="/register" className="btn btn-warning btn-sm w-100 fw-bold py-2 text-dark">
+                          <i className="bi bi-person-plus-fill me-2"></i>Create New Account
+                        </Link>
+                      </div>
+                    )}
                     
                     <form onSubmit={handleSubmit(onSubmit)}>
                       {/* Email Field */}

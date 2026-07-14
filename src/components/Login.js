@@ -36,150 +36,204 @@ const Login = () => {
   };
 
   return (
-    <div className="min-vh-100 d-flex align-items-center" style={{ background: 'linear-gradient(135deg, #1f2937 0%, #374151 100%)' }}>
-      <div className="container">
-        <div className="row justify-content-center">
-          <div className="col-md-6 col-lg-5">
-            <div className="custom-card shadow-lg">
-              {/* Header */}
-              <div className="custom-card-header text-center">
-                <div className="mb-3">
-                  <i className="bi bi-heart-pulse-fill" style={{ fontSize: '3rem' }}></i>
+  return (
+    <div className="min-vh-100 d-flex align-items-stretch" style={{ background: '#f4f6f9' }}>
+      <div className="row g-0 w-100">
+        {/* Left Visual Column - Hidden on mobile, visible on desktop (md and up) */}
+        <div className="col-md-6 d-none d-md-flex flex-column justify-content-between p-5 text-white" 
+             style={{ 
+               background: 'linear-gradient(135deg, #b31010 0%, #800a0a 100%)',
+               position: 'relative',
+               overflow: 'hidden'
+             }}>
+          {/* Decorative Background Pattern */}
+          <div style={{
+            position: 'absolute',
+            top: 0, left: 0, right: 0, bottom: 0,
+            backgroundImage: 'radial-gradient(circle at 20% 30%, rgba(255,255,255,0.08) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(255,255,255,0.05) 0%, transparent 40%)',
+            pointerEvents: 'none'
+          }}></div>
+
+          {/* Top Logo */}
+          <div className="d-flex align-items-center mb-5" style={{ zIndex: 2 }}>
+            <div className="bg-white rounded-circle p-2 d-flex align-items-center justify-content-center me-3 shadow-sm" style={{ width: '45px', height: '45px' }}>
+              <i className="bi bi-heart-pulse-fill text-danger fs-4"></i>
+            </div>
+            <span className="fs-4 fw-bold tracking-wider">BLOOD ALERT</span>
+          </div>
+
+          {/* Middle Content */}
+          <div className="my-auto" style={{ zIndex: 2, maxWidth: '480px' }}>
+            <h1 className="display-4 fw-bold mb-4" style={{ lineHeight: '1.2' }}>
+              Every Drop <br />
+              <span style={{ color: '#ffcdd2' }}>Saves Lives.</span>
+            </h1>
+            <p className="lead opacity-90 mb-5">
+              Welcome back to the Blood Alert community. Join thousands of heroes coordinating emergency blood requests and donations in real time.
+            </p>
+            
+            <div className="row g-4">
+              <div className="col-6">
+                <div className="d-flex align-items-center">
+                  <div className="bg-white bg-opacity-15 rounded-3 p-3 me-3">
+                    <i className="bi bi-activity fs-3 text-white"></i>
+                  </div>
+                  <div>
+                    <h5 className="mb-0 fw-bold">Live Alerting</h5>
+                    <small className="opacity-75">Instant notifications</small>
+                  </div>
                 </div>
-                <h2 className="mb-0 fw-bold">Blood Alert</h2>
-                <p className="mb-0 opacity-75">User Portal</p>
               </div>
-
-              {/* Login Form */}
-              <div className="card-body p-4">
-                <h4 className="text-center mb-4 text-red fw-bold">Welcome Back</h4>
-                
-                <form onSubmit={handleSubmit(onSubmit)}>
-                  {/* Email Field */}
-                  <div className="form-group mb-3">
-                    <label className="form-label text-dark fw-semibold">
-                      <i className="bi bi-envelope me-2 text-red"></i>
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      className={`form-control custom-form-control ${errors.email ? 'is-invalid' : ''}`}
-                      placeholder="Enter your email"
-                      {...register('email', {
-                        required: 'Email is required',
-                        pattern: {
-                          value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                          message: 'Invalid email address'
-                        }
-                      })}
-                    />
-                    {errors.email && (
-                      <div className="invalid-feedback">
-                        {errors.email.message}
-                      </div>
-                    )}
+              <div className="col-6">
+                <div className="d-flex align-items-center">
+                  <div className="bg-white bg-opacity-15 rounded-3 p-3 me-3">
+                    <i className="bi bi-shield-fill-check fs-3 text-white"></i>
                   </div>
-
-                  {/* Password Field */}
-                  <div className="form-group mb-3">
-                    <label className="form-label text-dark fw-semibold">
-                      <i className="bi bi-lock me-2 text-red"></i>
-                      Password
-                    </label>
-                    <div className="input-group">
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        className={`form-control custom-form-control ${errors.password ? 'is-invalid' : ''}`}
-                        placeholder="Enter your password"
-                        {...register('password', {
-                          required: 'Password is required',
-                          minLength: {
-                            value: 6,
-                            message: 'Password must be at least 6 characters'
-                          }
-                        })}
-                      />
-                      <button
-                        type="button"
-                        className="btn btn-outline-secondary"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        <i className={`bi bi-eye${showPassword ? '-slash' : ''}`}></i>
-                      </button>
-                      {errors.password && (
-                        <div className="invalid-feedback">
-                          {errors.password.message}
-                        </div>
-                      )}
-                    </div>
+                  <div>
+                    <h5 className="mb-0 fw-bold">Secure Auth</h5>
+                    <small className="opacity-75">Protected records</small>
                   </div>
-
-                  {/* Remember Me */}
-                  <div className="form-check mb-3">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      id="rememberMe"
-                      {...register('rememberMe')}
-                    />
-                    <label className="form-check-label text-secondary" htmlFor="rememberMe">
-                      Remember me
-                    </label>
-                  </div>
-
-                  {/* Login Button */}
-                  <button
-                    type="submit"
-                    className="btn btn-primary w-100 py-2 fw-bold"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <>
-                        <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                        Signing In...
-                      </>
-                    ) : (
-                      <>
-                        <i className="bi bi-box-arrow-in-right me-2"></i>
-                        Sign In
-                      </>
-                    )}
-                  </button>
-
-                  {/* Register Link */}
-                  <div className="text-center mt-3">
-                    <Link 
-                      to="/register" 
-                      className="text-decoration-none text-red fw-semibold"
-                    >
-                      <i className="bi bi-person-plus me-1"></i>
-                      Don't have an account? Register here
-                    </Link>
-                  </div>
-
-                  {/* Forgot Password Link */}
-                  <div className="text-center mt-2">
-                    <Link 
-                      to="/forgot-password" 
-                      className="text-decoration-none text-muted"
-                    >
-                      <i className="bi bi-question-circle me-1"></i>
-                      Forgot your password?
-                    </Link>
-                  </div>
-                </form>
-              </div>
-
-              {/* Footer */}
-              <div className="card-footer bg-light text-center py-3">
-                <small className="text-muted">
-                  <i className="bi bi-shield-check me-1 text-red"></i>
-                  Secure Access Portal
-                </small>
+                </div>
               </div>
             </div>
+          </div>
 
+          {/* Bottom Footer */}
+          <div className="mt-5 opacity-75" style={{ zIndex: 2 }}>
+            <small>© 2026 Blood Alert System. All rights reserved.</small>
+          </div>
+        </div>
 
+        {/* Right Form Column */}
+        <div className="col-md-6 d-flex align-items-center justify-content-center p-4 p-md-5 bg-white">
+          <div className="w-100" style={{ maxWidth: '420px' }}>
+            {/* Mobile Header - Visible only on mobile */}
+            <div className="d-md-none text-center mb-4">
+              <div className="bg-danger rounded-circle p-3 d-inline-flex align-items-center justify-content-center mb-3 shadow" style={{ width: '70px', height: '70px' }}>
+                <i className="bi bi-heart-pulse-fill text-white fs-2"></i>
+              </div>
+              <h2 className="fw-bold text-dark mb-1">Blood Alert</h2>
+              <p className="text-muted">User Portal</p>
+            </div>
+
+            <div className="mb-4 d-none d-md-block">
+              <h2 className="fw-bold text-dark mb-1">Welcome Back</h2>
+              <p className="text-muted">Please sign in to access your portal.</p>
+            </div>
+
+            <form onSubmit={handleSubmit(onSubmit)} className="mt-2">
+              {/* Email Field */}
+              <div className="form-group mb-4">
+                <label className="form-label text-secondary fw-semibold mb-2">
+                  <i className="bi bi-envelope me-2 text-danger"></i>
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  className={`form-control form-control-lg border-2 ${errors.email ? 'is-invalid' : ''}`}
+                  style={{ borderRadius: '10px', fontSize: '1rem', transition: 'all 0.2s' }}
+                  placeholder="name@example.com"
+                  {...register('email', {
+                    required: 'Email is required',
+                    pattern: {
+                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                      message: 'Invalid email address'
+                    }
+                  })}
+                />
+                {errors.email && (
+                  <div className="invalid-feedback">
+                    {errors.email.message}
+                  </div>
+                )}
+              </div>
+
+              {/* Password Field */}
+              <div className="form-group mb-4">
+                <div className="d-flex justify-content-between mb-2">
+                  <label className="form-label text-secondary fw-semibold mb-0">
+                    <i className="bi bi-lock me-2 text-danger"></i>
+                    Password
+                  </label>
+                  <Link to="/forgot-password" className="small text-decoration-none text-danger fw-semibold">
+                    Forgot Password?
+                  </Link>
+                </div>
+                <div className="input-group">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    className={`form-control form-control-lg border-2 ${errors.password ? 'is-invalid' : ''}`}
+                    style={{ borderRadius: '10px 0 0 10px', fontSize: '1rem', borderRight: '0' }}
+                    placeholder="••••••••"
+                    {...register('password', {
+                      required: 'Password is required',
+                      minLength: {
+                        value: 6,
+                        message: 'Password must be at least 6 characters'
+                      }
+                    })}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary border-2 px-3"
+                    style={{ borderRadius: '0 10px 10px 0' }}
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    <i className={`bi bi-eye${showPassword ? '-slash' : ''}`}></i>
+                  </button>
+                  {errors.password && (
+                    <div className="invalid-feedback">
+                      {errors.password.message}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Remember Me */}
+              <div className="form-check mb-4 d-flex align-items-center">
+                <input
+                  className="form-check-input me-2"
+                  type="checkbox"
+                  id="rememberMe"
+                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                  {...register('rememberMe')}
+                />
+                <label className="form-check-label text-secondary" htmlFor="rememberMe" style={{ cursor: 'pointer', userSelect: 'none' }}>
+                  Keep me signed in
+                </label>
+              </div>
+
+              {/* Login Button */}
+              <button
+                type="submit"
+                className="btn btn-danger btn-lg w-100 py-3 fw-bold mb-4"
+                style={{ borderRadius: '10px', transition: 'all 0.2s', boxShadow: '0 4px 15px rgba(220, 53, 69, 0.2)' }}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                    Signing In...
+                  </>
+                ) : (
+                  <>
+                    <i className="bi bi-box-arrow-in-right me-2"></i>
+                    Sign In
+                  </>
+                )}
+              </button>
+
+              {/* Register Link */}
+              <div className="text-center">
+                <span className="text-secondary">Don't have an account? </span>
+                <Link 
+                  to="/register" 
+                  className="text-decoration-none text-danger fw-bold ms-1"
+                >
+                  Register here
+                </Link>
+              </div>
+            </form>
           </div>
         </div>
       </div>
