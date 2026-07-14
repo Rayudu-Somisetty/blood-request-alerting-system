@@ -130,7 +130,7 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  });
 
   useEffect(() => {
     fetchDashboardData();

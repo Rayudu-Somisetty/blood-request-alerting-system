@@ -116,7 +116,6 @@ const Register = () => {
       await emailVerificationService.sendVerificationEmail();
 
       toast.success('Verification email sent. Please check your inbox.');
-      setEmailVerificationSent(true);
       setResendTimer(60);
       setOtpSent(true);
     } catch (error) {
@@ -131,7 +130,6 @@ const Register = () => {
   const handleOtpVerification = async () => {
     setIsLoading(true);
     try {
-      setVerificationChecking(true);
       // Reload current user and check emailVerified
       await emailVerificationService.reloadCurrentUser();
       const verified = await emailVerificationService.isEmailVerified();
@@ -148,7 +146,6 @@ const Register = () => {
       console.error('Email verification check error:', error);
       toast.error(error.message || 'Failed to verify email. Please try again.');
     } finally {
-      setVerificationChecking(false);
       setIsLoading(false);
     }
   };
