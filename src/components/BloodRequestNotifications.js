@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Modal, Button, Card, Badge, Alert, Spinner } from 'react-bootstrap';
 import { FaBell, FaTint, FaHeart, FaHospital, FaTrash } from 'react-icons/fa';
 import firebaseService from '../firebase/firebaseService';
@@ -12,13 +12,7 @@ const BloodRequestNotifications = ({ show, onHide }) => {
   const [alert, setAlert] = useState({ show: false, type: '', message: '' });
   const { user } = useAuth();
 
-  useEffect(() => {
-    if (show && user) {
-      loadNotifications();
-    }
-  }, [show, user, loadNotifications]);
-
-  const loadNotifications = async () => {
+  const loadNotifications = useCallback(async () => {
     try {
       setLoading(true);
       console.log('🔔 Loading notifications for user:', user.uid);
@@ -56,7 +50,13 @@ const BloodRequestNotifications = ({ show, onHide }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (show && user) {
+      loadNotifications();
+    }
+  }, [show, user, loadNotifications]);
 
   const showAlert = (type, message) => {
     setAlert({ show: true, type, message });

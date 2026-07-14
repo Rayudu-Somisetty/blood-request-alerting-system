@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
-import { AdminPermissions } from '../utils/adminPermissions';
-import { Navbar, Container, Nav, NavbarToggle, NavbarCollapse, Dropdown, Badge } from 'react-bootstrap';
+import { Navbar, Container, Nav, Dropdown, Badge } from 'react-bootstrap';
 import { FaBell } from 'react-icons/fa';
 import BloodRequestNotifications from './BloodRequestNotifications';
 import firebaseService from '../firebase/firebaseService';
@@ -29,7 +27,7 @@ const Navigation = () => {
     } catch (error) {
       console.error('Error loading notification count:', error);
     }
-  }, [firebaseService, user.uid]);
+  }, [user.uid]);
 
   useEffect(() => {
     if (isAuthenticated && user) {

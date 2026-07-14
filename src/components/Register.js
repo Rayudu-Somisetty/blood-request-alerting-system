@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
@@ -47,13 +47,6 @@ const Register = () => {
 
   const password = watch('password');
 
-  // Auto-send OTP when step changes to 2
-  useEffect(() => {
-    if (step === 2 && registrationData && !otpSent) {
-      handleSendEmailVerification();
-    }
-  }, [step, registrationData, otpSent, handleSendEmailVerification]);
-
   // Resend timer effect
   useEffect(() => {
     let interval;
@@ -100,7 +93,7 @@ const Register = () => {
   };
 
   // Send Firebase email verification to the user
-  const handleSendEmailVerification = async () => {
+  const handleSendEmailVerification = useCallback(async () => {
 
     if (!registrationData?.email) {
       toast.error('Email address is required');
@@ -124,7 +117,14 @@ const Register = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [registrationData, registerUser]);
+
+  // Auto-send OTP when step changes to 2
+  useEffect(() => {
+    if (step === 2 && registrationData && !otpSent) {
+      handleSendEmailVerification();
+    }
+  }, [step, registrationData, otpSent, handleSendEmailVerification]);
 
   // Handle OTP verification and complete registration
   const handleOtpVerification = async () => {

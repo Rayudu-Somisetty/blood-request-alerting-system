@@ -182,37 +182,38 @@ const BloodRequests = () => {
     }
   };
 
-  // Delete old requests (1 week old)
-  const deleteOldRequests = async () => {
-    try {
-      const oneWeekAgo = new Date();
-      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-      
-      const oldRequests = requests.filter(request => {
-        const createdDate = new Date(request.createdAt);
-        return createdDate < oneWeekAgo && (request.status === 'completed' || request.status === 'rejected');
-      });
-
-      for (const request of oldRequests) {
-        await firebaseService.deleteBloodRequest(request.id);
-      }
-
-      if (oldRequests.length > 0) {
-        toast.success(`Deleted ${oldRequests.length} old request(s)`);
-        fetchRequestsData();
-      }
-    } catch (error) {
-      console.error('Error deleting old requests:', error);
-      toast.error('Failed to delete old requests');
-    }
-  };
-
   // Check for old requests on component mount
   useEffect(() => {
+    // Delete old requests (1 week old)
+    const deleteOldRequests = async () => {
+      try {
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+        const oldRequests = requests.filter(request => {
+          const createdDate = new Date(request.createdAt);
+          return createdDate < oneWeekAgo && (request.status === 'completed' || request.status === 'rejected');
+        });
+
+        for (const request of oldRequests) {
+          await firebaseService.deleteBloodRequest(request.id);
+        }
+
+        if (oldRequests.length > 0) {
+          toast.success(`Deleted ${oldRequests.length} old request(s)`);
+          fetchRequestsData();
+        }
+      } catch (error) {
+        console.error('Error deleting old requests:', error);
+        toast.error('Failed to delete old requests');
+      }
+    };
+
     if (!loading && requests.length > 0) {
       deleteOldRequests();
     }
-  }, [loading, deleteOldRequests, requests.length]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, requests.length]);
 
   const handleAction = (requestId, action) => {
     setRequests(requests.map(req => 

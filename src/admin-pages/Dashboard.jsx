@@ -1,21 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
-import { AdminPermissions } from '../utils/adminPermissions';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement
-} from 'chart.js';
-import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import RealTimeNotifications from '../admin-components/notifications/RealTimeNotifications';
 
 const Dashboard = () => {
@@ -136,7 +121,7 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
-  });
+  }, [firebaseService]);
 
   useEffect(() => {
     fetchDashboardData();

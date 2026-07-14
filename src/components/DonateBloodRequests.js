@@ -36,10 +36,6 @@ const DonateBloodRequests = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    applyFilters();
-  }, [requests, filters, applyFilters]);
-
   const loadBloodRequests = async () => {
     try {
       setLoading(true);
@@ -79,7 +75,7 @@ const DonateBloodRequests = () => {
     }
   };
 
-  const applyFilters = () => {
+  const applyFilters = useCallback(() => {
     let filtered = [...requests];
 
     // Filter by search query (searches across multiple fields)
@@ -143,7 +139,11 @@ const DonateBloodRequests = () => {
     });
 
     setFilteredRequests(filtered);
-  };
+  }, [requests, filters, user]);
+
+  useEffect(() => {
+    applyFilters();
+  }, [applyFilters]);
 
   const showAlert = (type, message) => {
     setAlert({ show: true, type, message });

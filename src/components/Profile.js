@@ -154,7 +154,7 @@ const Profile = () => {
     } finally {
       setLoading(false);
     }
-  });
+  }, [user]);
 
   // Fetch user's actual donation and request data
   useEffect(() => {
