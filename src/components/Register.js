@@ -53,7 +53,7 @@ const Register = () => {
   // Auto-send OTP when step changes to 2
   useEffect(() => {
     if (step === 2 && registrationData && !otpSent) {
-      handleSendOTP();
+      handleSendEmailVerification();
     }
   }, [step, registrationData, otpSent]);
 
