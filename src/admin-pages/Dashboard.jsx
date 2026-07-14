@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { AdminPermissions } from '../utils/adminPermissions';
 import {
@@ -15,11 +16,16 @@ import {
   ArcElement
 } from 'chart.js';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
+import RealTimeNotifications from '../admin-components/notifications/RealTimeNotifications';
 
 const Dashboard = () => {
   const { user, firebaseService } = useAuth();
+  const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState({
-    stats: {},
+    totalUsers: 0,
+    totalDonations: 0,
+    pendingRequests: 0,
+    emergencyRequests: 0,
     emergencyDetails: [],
     recentActivity: []
   });
@@ -99,7 +105,7 @@ const Dashboard = () => {
       // Sort all activities by date
       recentActivity.sort((a, b) => new Date(b.time) - new Date(a.time));
       
-      setStats({
+      setDashboardData({
         totalUsers: statsData.totalUsers || 0,
         totalDonations: statsData.completedDonations || 0,
         pendingRequests: pendingRequests.length,
@@ -119,7 +125,7 @@ const Dashboard = () => {
       
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
-      setStats({
+      setDashboardData({
         totalUsers: 0,
         totalDonations: 0,
         pendingRequests: 0,
@@ -198,7 +204,7 @@ const Dashboard = () => {
                 </div>
                 <div className="flex-grow-1 ms-3">
                   <h6 className="text-muted mb-1">Registered Users</h6>
-                  <h3 className="text-black mb-0">{stats.totalUsers.toLocaleString()}</h3>
+                  <h3 className="text-black mb-0">{dashboardData.totalUsers.toLocaleString()}</h3>
                   <small className="text-muted">
                     <i className="bi bi-info-circle"></i> Real-time data
                   </small>
@@ -219,7 +225,7 @@ const Dashboard = () => {
                 </div>
                 <div className="flex-grow-1 ms-3">
                   <h6 className="text-muted mb-1">Total Donations</h6>
-                  <h3 className="text-black mb-0">{stats.totalDonations.toLocaleString()}</h3>
+                  <h3 className="text-black mb-0">{dashboardData.totalDonations.toLocaleString()}</h3>
                   <small className="text-muted">
                     <i className="bi bi-info-circle"></i> Real-time data
                   </small>
@@ -240,7 +246,7 @@ const Dashboard = () => {
                 </div>
                 <div className="flex-grow-1 ms-3">
                   <h6 className="text-muted mb-1">Pending Requests</h6>
-                  <h3 className="text-black mb-0">{stats.pendingRequests}</h3>
+                  <h3 className="text-black mb-0">{dashboardData.pendingRequests}</h3>
                   <small className="text-muted">
                     <i className="bi bi-info-circle"></i> Current status
                   </small>
@@ -261,7 +267,7 @@ const Dashboard = () => {
                 </div>
                 <div className="flex-grow-1 ms-3">
                   <h6 className="text-muted mb-1">Emergency Requests</h6>
-                  <h3 className="text-black mb-0">{stats.emergencyRequests}</h3>
+                  <h3 className="text-black mb-0">{dashboardData.emergencyRequests}</h3>
                   <small className="text-muted">
                     <i className="bi bi-info-circle"></i> Current status
                   </small>
@@ -273,7 +279,7 @@ const Dashboard = () => {
       </div>
 
       {/* Emergency Requests Alert */}
-      {stats.emergencyRequests > 0 && (
+      {dashboardData.emergencyRequests > 0 && (
         <div className="row mb-4">
           <div className="col-12">
             <div className="alert alert-danger border-0 shadow-sm" role="alert">
@@ -284,7 +290,7 @@ const Dashboard = () => {
                 <div className="flex-grow-1 ms-3">
                   <h6 className="alert-heading mb-1">Emergency Blood Requests Active!</h6>
                   <p className="mb-2">
-                    There are <strong>{stats.emergencyRequests} urgent blood requests</strong> that require immediate attention.
+                    There are <strong>{dashboardData.emergencyRequests} urgent blood requests</strong> that require immediate attention.
                   </p>
                   <div className="d-flex gap-2">
                     <button 
@@ -313,7 +319,7 @@ const Dashboard = () => {
       )}
 
       {/* Emergency Requests Details */}
-      {stats.emergencyRequests > 0 && stats.emergencyDetails && (
+      {dashboardData.emergencyRequests > 0 && dashboardData.emergencyDetails && (
         <div className="row mb-4">
           <div className="col-12">
             <div className="card border-0 shadow-sm">
@@ -339,7 +345,7 @@ const Dashboard = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {stats.emergencyDetails.map((request) => (
+                      {dashboardData.emergencyDetails.map((request) => (
                         <tr key={request.id}>
                           <td className="fw-bold text-dark">{request.patientName}</td>
                           <td>
@@ -397,7 +403,7 @@ const Dashboard = () => {
               <h5 className="card-title text-black fw-bold mb-0">Recent Activity</h5>
             </div>
             <div className="card-body">
-              {stats.recentActivity.length === 0 ? (
+              {dashboardData.recentActivity.length === 0 ? (
                 <div className="text-center py-4">
                   <i className="bi bi-clock-history text-muted" style={{fontSize: '2rem'}}></i>
                   <h6 className="text-muted mt-2">No recent activity</h6>
@@ -405,7 +411,7 @@ const Dashboard = () => {
                 </div>
               ) : (
                 <div className="list-group list-group-flush">
-                  {stats.recentActivity.map((activity) => (
+                  {dashboardData.recentActivity.map((activity) => (
                     <div key={activity.id} className="list-group-item px-0 py-3 border-0 border-bottom">
                       <div className="d-flex align-items-center">
                         <div className="flex-shrink-0">
