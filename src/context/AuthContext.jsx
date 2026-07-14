@@ -21,19 +21,18 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = firebaseService.onAuthStateChanged(async (firebaseUser) => {
       try {
-        if (firebaseUser) {
-          // User is signed in, get the full user profile
+        if (firebaseUser && firebaseUser.emailVerified) {
+          // User is signed in AND has verified their email
           const userData = await firebaseService.getCurrentUser();
           setUser(userData);
           setIsAuthenticated(true);
         } else {
-          // User is signed out
+          // User is signed out or email not yet verified
           setUser(null);
           setIsAuthenticated(false);
         }
       } catch (error) {
         console.error('Auth state change error:', error);
-        // If user profile not found, they're logged out automatically
         setUser(null);
         setIsAuthenticated(false);
       } finally {
@@ -128,11 +127,12 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       const response = await firebaseService.register(userData);
-      
+
       if (response.success) {
-        setUser(response.data.user);
-        setIsAuthenticated(true);
-        toast.success(response.message || 'Registration successful!');
+        // Account created — but DO NOT set as authenticated yet.
+        // The user must verify their email first.
+        // After they click the verification link and return, handleCheckVerification
+        // in Register.js will navigate them to the dashboard.
         return { success: true, user: response.data.user };
       } else {
         toast.error(response.message || 'Registration failed');

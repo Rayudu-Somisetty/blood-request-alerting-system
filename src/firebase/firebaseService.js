@@ -26,42 +26,16 @@ import {
 import { auth, db } from './config';
 
 class FirebaseService {
-  // Helper method to convert username to Firebase-compatible email
-  generateAuthEmail(username) {
-    return `${username.toLowerCase()}@bloodalert.internal`;
-  }
-
-  // Helper method to check if username exists
-  async isUsernameAvailable(username) {
-    try {
-      const usersRef = collection(db, 'users');
-      const usersSnapshot = await getDocs(usersRef);
-      
-      for (const doc of usersSnapshot.docs) {
-        if (doc.data().username === username.toLowerCase()) {
-          return false;
-        }
-      }
-      return true;
-    } catch (error) {
-      console.error('Error checking username:', error);
-      throw new Error('Unable to verify username availability');
-    }
-  }
-
   // Authentication Methods
-  async login(username, password) {
+  async login(email, password) {
     try {
-      // Convert username to internal auth email
-      const authEmail = this.generateAuthEmail(username);
-      
-      const userCredential = await signInWithEmailAndPassword(auth, authEmail, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      
+
       // Get additional user data from Firestore
       const userDocRef = doc(db, 'users', user.uid);
       const userDoc = await getDoc(userDocRef);
-      
+
       if (userDoc.exists()) {
         const userData = { ...userDoc.data(), uid: user.uid };
         return {
@@ -83,40 +57,14 @@ class FirebaseService {
 
   async loginWithEmail(email, password) {
     try {
-      // First, check if this is a direct email login (admin accounts)
-      let userCredential;
-      try {
-        userCredential = await signInWithEmailAndPassword(auth, email, password);
-      } catch (directEmailError) {
-        // If direct email fails, check if there's a user with this email in Firestore
-        // and try with their username-based auth
-        const usersRef = collection(db, 'users');
-        const usersSnapshot = await getDocs(usersRef);
-        
-        let foundUser = null;
-        usersSnapshot.forEach((doc) => {
-          const userData = doc.data();
-          if (userData.email === email && userData.username) {
-            foundUser = userData;
-          }
-        });
-        
-        if (foundUser && foundUser.username) {
-          // Try logging in with username
-          const authEmail = this.generateAuthEmail(foundUser.username);
-          userCredential = await signInWithEmailAndPassword(auth, authEmail, password);
-        } else {
-          throw directEmailError;
-        }
-      }
-      
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      
+
       // Get additional user data from Firestore
       try {
         const userDocRef = doc(db, 'users', user.uid);
         const userDoc = await getDoc(userDocRef);
-        
+
         if (userDoc.exists()) {
           const userData = { ...userDoc.data(), uid: user.uid };
           return {
@@ -128,7 +76,7 @@ class FirebaseService {
             }
           };
         } else {
-          // User authenticated but no Firestore profile - this is OK for some users
+          // User authenticated but no Firestore profile
           console.warn('User authenticated but no Firestore profile found, using basic auth data');
           return {
             success: true,
@@ -146,7 +94,6 @@ class FirebaseService {
         }
       } catch (firestoreError) {
         console.warn('Firestore read error during login, using basic auth data:', firestoreError);
-        // If Firestore read fails, still return successful login with basic user data
         return {
           success: true,
           message: 'Login successful',
@@ -169,51 +116,37 @@ class FirebaseService {
 
   async register(userData) {
     try {
-      const { email, password, username, ...profileData } = userData;
-      
-      // Check if username is available
-      if (username) {
-        const isAvailable = await this.isUsernameAvailable(username);
-        if (!isAvailable) {
-          throw new Error('Username is already taken. Please choose another one.');
-        }
-      }
-      
-      let user;
-      let userCredential;
-      
-      // Create user with username/password
-      // Generate internal email from username for Firebase Auth
-      const authEmail = username ? this.generateAuthEmail(username) : email;
-      userCredential = await createUserWithEmailAndPassword(auth, authEmail, password);
-      user = userCredential.user;
-      
+      const { email, password, ...profileData } = userData;
+
+      // Create Firebase Auth account using the user's real email
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
       // Create user profile in Firestore
       const userProfile = {
         ...profileData,
-        email: email, // Real email for communication
-        username: username ? username.toLowerCase() : null, // Username for login
+        email: email,
         uid: user.uid,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         isActive: true,
-        isVerified: true, // Email verified via OTP
+        isVerified: false, // Will be set true after email verification
         totalDonations: 0,
         totalRequests: 0,
         role: profileData.role || 'user',
-        userType: 'user', // All users are universal (can donate and request)
+        userType: 'user',
         canDonate: true,
         canRequest: true,
-        authMethod: 'username'
+        authMethod: 'email'
       };
-      
+
       await setDoc(doc(db, 'users', user.uid), userProfile);
-      
-      // Update Firebase profile
+
+      // Update Firebase display name
       await updateFirebaseProfile(user, {
         displayName: `${profileData.firstName} ${profileData.lastName}`
       });
-      
+
       return {
         success: true,
         message: 'Registration successful',
@@ -324,6 +257,7 @@ class FirebaseService {
 
   async resetPassword(email) {
     try {
+      // Firebase Auth accounts now use real emails, so we can send directly.
       await sendPasswordResetEmail(auth, email);
       return { success: true };
     } catch (error) {
@@ -984,19 +918,21 @@ class FirebaseService {
   getErrorMessage(error) {
     switch (error.code) {
       case 'auth/user-not-found':
-        return 'Username not found. Please check your username or register.';
+        return 'No account found with this email. Please register first.';
       case 'auth/wrong-password':
         return 'Incorrect password. Please try again.';
       case 'auth/email-already-in-use':
-        return 'This username is already registered.';
+        return 'An account with this email already exists. Please login instead.';
       case 'auth/weak-password':
         return 'Password should be at least 6 characters.';
       case 'auth/invalid-email':
-        return 'Invalid username format.';
+        return 'Invalid email address format.';
       case 'auth/invalid-credential':
-        return 'Invalid username or password. Please try again.';
+        return 'Invalid email or password. Please try again.';
       case 'auth/too-many-requests':
         return 'Too many login attempts. Please try again later.';
+      case 'auth/network-request-failed':
+        return 'Network error. Please check your internet connection.';
       case 'permission-denied':
       case 'firestore/permission-denied':
         return 'Database permission error. Please contact support.';

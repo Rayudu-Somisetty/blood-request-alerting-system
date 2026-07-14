@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
+    "cleanup:fake-users": "node scripts/cleanup-fake-users.js",
     "test": "jest",
     "test:watch": "jest --watch"
   },
