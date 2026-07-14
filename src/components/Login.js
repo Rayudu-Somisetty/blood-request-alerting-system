@@ -8,7 +8,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
-  
+
   const {
     register,
     handleSubmit,
@@ -17,7 +17,7 @@ const Login = () => {
 
   const onSubmit = async (data) => {
     setIsLoading(true);
-    
+
     try {
       const result = await login(data);
       if (result && result.success) {
@@ -40,12 +40,12 @@ const Login = () => {
     <div className="min-vh-100 d-flex align-items-stretch" style={{ background: '#f4f6f9' }}>
       <div className="row g-0 w-100">
         {/* Left Visual Column - Hidden on mobile, visible on desktop (md and up) */}
-        <div className="col-md-6 d-none d-md-flex flex-column justify-content-between p-5 text-white" 
-             style={{ 
-               background: 'linear-gradient(135deg, #b31010 0%, #800a0a 100%)',
-               position: 'relative',
-               overflow: 'hidden'
-             }}>
+        <div className="col-md-6 d-none d-md-flex flex-column justify-content-between p-5 text-white"
+          style={{
+            background: 'linear-gradient(135deg, #b31010 0%, #800a0a 100%)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
           {/* Decorative Background Pattern */}
           <div style={{
             position: 'absolute',
@@ -71,7 +71,7 @@ const Login = () => {
             <p className="lead opacity-90 mb-5">
               Welcome back to the Blood Alert community. Join thousands of heroes coordinating emergency blood requests and donations in real time.
             </p>
-            
+
             <div className="row g-4">
               <div className="col-6">
                 <div className="d-flex align-items-center">
@@ -226,8 +226,8 @@ const Login = () => {
               {/* Register Link */}
               <div className="text-center">
                 <span className="text-secondary">Don't have an account? </span>
-                <Link 
-                  to="/register" 
+                <Link
+                  to="/register"
                   className="text-decoration-none text-danger fw-bold ms-1"
                 >
                   Register here
