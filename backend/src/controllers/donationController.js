@@ -1,11 +1,27 @@
-const mongoose = require('mongoose');
-const Donation = require('../models/Donation');
+const DonationService = require('../models/DonationService');
+const { sendEmail } = require('../utils/emailService');
 
 // Create a new donation record
 exports.createDonation = async (req, res) => {
     try {
-        const donation = new Donation(req.body);
-        await donation.save();
+        const donation = await DonationService.create(req.body);
+        
+        try {
+            const donorEmail = donation.donorEmail || req.body.donorEmail;
+            const donorName = donation.donorName || req.body.donorName;
+            const confirmationMessage = `Dear ${donorName},\n\nThank you for your blood donation!\n\nDonation Details:\nBlood Type: ${donation.bloodType}\nQuantity: ${donation.quantity} units\nDate: ${new Date(donation.donationDate).toLocaleDateString()}\n\nYour donation helps save lives in our community.\n\nBest regards,\nBlood Alert Team`;
+            
+            if (donorEmail) {
+                await sendEmail(
+                    donorEmail,
+                    'Donation Confirmation - Blood Alert System',
+                    confirmationMessage
+                );
+            }
+        } catch (emailError) {
+            console.error('Failed to send donation confirmation email:', emailError.message);
+        }
+        
         res.status(201).json(donation);
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -15,8 +31,8 @@ exports.createDonation = async (req, res) => {
 // Get all donations
 exports.getAllDonations = async (req, res) => {
     try {
-        const donations = await Donation.find();
-        res.status(200).json(donations);
+        const result = await DonationService.getAll();
+        res.status(200).json(result.donations);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -25,7 +41,7 @@ exports.getAllDonations = async (req, res) => {
 // Get a donation by ID
 exports.getDonationById = async (req, res) => {
     try {
-        const donation = await Donation.findById(req.params.id);
+        const donation = await DonationService.getById(req.params.id);
         if (!donation) {
             return res.status(404).json({ message: 'Donation not found' });
         }
@@ -38,7 +54,7 @@ exports.getDonationById = async (req, res) => {
 // Update a donation record
 exports.updateDonation = async (req, res) => {
     try {
-        const donation = await Donation.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const donation = await DonationService.update(req.params.id, req.body);
         if (!donation) {
             return res.status(404).json({ message: 'Donation not found' });
         }
@@ -51,10 +67,7 @@ exports.updateDonation = async (req, res) => {
 // Delete a donation record
 exports.deleteDonation = async (req, res) => {
     try {
-        const donation = await Donation.findByIdAndDelete(req.params.id);
-        if (!donation) {
-            return res.status(404).json({ message: 'Donation not found' });
-        }
+        await DonationService.delete(req.params.id);
         res.status(204).send();
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -64,227 +77,22 @@ exports.deleteDonation = async (req, res) => {
 // Get donation statistics
 exports.getDonationStats = async (req, res) => {
     try {
-        const totalDonations = await Donation.countDocuments();
-        const bloodTypeStats = await Donation.aggregate([
-            {
-                $group: {
-                    _id: '$bloodType',
-                    count: { $sum: 1 },
-                    totalQuantity: { $sum: '$quantity' }
-                }
-            }
-        ]);
-        
-        res.status(200).json({
-            totalDonations,
-            bloodTypeStats
-        });
+        const stats = await DonationService.getStats();
+        res.status(200).json(stats);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
-// PUBLIC ENDPOINTS FOR MAIN WEBSITE INTEGRATION
-
-// Create donation request from public form
-exports.createPublicDonationRequest = async (req, res) => {
-    try {
-        const { donorName, email, phone, bloodType, preferredDate, location, medicalConditions, consentGiven } = req.body;
-        
-        // For demo mode, we'll just return success without saving to database
-        // In production, you would save this to a temporary collection or process it differently
-        
-        console.log('📋 Public Donation Request Received:', {
-            donorName,
-            email,
-            phone,
-            bloodType,
-            preferredDate,
-            location,
-            medicalConditions,
-            consentGiven
-        });
-        
-        // Simulate saving process
-        const requestId = new mongoose.Types.ObjectId();
-        const requestData = {
-            _id: requestId,
-            donorName,
-            email,
-            phone,
-            bloodType,
-            preferredDate,
-            location,
-            status: 'pending',
-            timestamp: new Date(),
-            type: 'donation_request'
-        };
-        
-        // Emit real-time notification to admin portal
-        const io = req.app.get('io');
-        if (io) {
-            io.to('admins').emit('new_donation_request', {
-                message: `New donation request from ${donorName}`,
-                data: requestData,
-                timestamp: new Date()
-            });
-            console.log('🔔 Real-time notification sent to admins');
-        }
-        
-        res.status(201).json({
-            success: true,
-            message: 'Donation request submitted successfully! We will contact you soon.',
-            requestId: requestId,
-            data: requestData
-        });
-    } catch (error) {
-        console.error('Public donation request error:', error);
-        res.status(400).json({ 
-            success: false,
-            message: 'Failed to submit donation request',
-            error: error.message 
-        });
-    }
-};
-
-// Create blood request from public form
-exports.createBloodRequest = async (req, res) => {
-    try {
-        const requestData = {
-            ...req.body,
-            type: 'blood_request',
-            status: 'urgent',
-            source: 'public_form',
-            createdAt: new Date(),
-            _id: new mongoose.Types.ObjectId()
-        };
-        
-        console.log('🩸 Urgent Blood Request Received:', requestData);
-        
-        // Emit real-time notification to admin portal
-        const io = req.app.get('io');
-        if (io) {
-            io.to('admins').emit('urgent_blood_request', {
-                message: `URGENT: Blood request for ${requestData.bloodType} - ${requestData.unitsNeeded} units needed`,
-                data: requestData,
-                timestamp: new Date(),
-                urgency: 'high'
-            });
-            console.log('🚨 URGENT notification sent to admins');
-        }
-        
-        // In demo mode, we don't save to database
-        // await bloodRequest.save();
-        
-        res.status(201).json({
-            success: true,
-            message: 'Blood request submitted successfully',
-            requestId: requestData._id
-        });
-    } catch (error) {
-        console.error('Blood request error:', error);
-        res.status(400).json({ 
-            success: false,
-            message: 'Failed to submit blood request',
-            error: error.message 
-        });
-    }
-};
-
-// Create campaign participation
-exports.createCampaignParticipation = async (req, res) => {
-    try {
-        const participation = new Donation({
-            ...req.body,
-            type: 'campaign_participation',
-            status: 'registered',
-            source: 'public_form',
-            createdAt: new Date()
-        });
-        
-        await participation.save();
-        
-        res.status(201).json({
-            success: true,
-            message: 'Campaign participation registered successfully',
-            participationId: participation._id
-        });
-    } catch (error) {
-        res.status(400).json({ 
-            success: false,
-            message: 'Failed to register for campaign',
-            error: error.message 
-        });
-    }
-};
-
-// Get available blood types for forms
+// Public endpoint to provide supported blood types for forms
 exports.getAvailableBloodTypes = async (req, res) => {
     try {
         const bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
         res.status(200).json({
             success: true,
-            bloodTypes
+            data: bloodTypes
         });
     } catch (error) {
-        res.status(500).json({ 
-            success: false,
-            message: 'Failed to fetch blood types',
-            error: error.message 
-        });
-    }
-};
-
-// Get upcoming blood drives
-exports.getUpcomingBloodDrives = async (req, res) => {
-    try {
-        // This would fetch from a BloodDrive model when implemented
-        const upcomingDrives = [
-            {
-                id: 1,
-                title: 'GIMSR Blood Drive 2025',
-                date: '2025-08-15',
-                location: 'GIMSR Hospital',
-                description: 'Annual blood donation drive'
-            }
-        ];
-        
-        res.status(200).json({
-            success: true,
-            drives: upcomingDrives
-        });
-    } catch (error) {
-        res.status(500).json({ 
-            success: false,
-            message: 'Failed to fetch blood drives',
-            error: error.message 
-        });
-    }
-};
-
-// Handle webhooks from external services
-exports.handleWebhook = async (req, res) => {
-    try {
-        const { type, data } = req.body;
-        
-        switch (type) {
-            case 'donation_form':
-                await this.createPublicDonationRequest({ body: data }, res);
-                break;
-            case 'blood_request':
-                await this.createBloodRequest({ body: data }, res);
-                break;
-            default:
-                res.status(400).json({ 
-                    success: false,
-                    message: 'Unknown webhook type' 
-                });
-        }
-    } catch (error) {
-        res.status(500).json({ 
-            success: false,
-            message: 'Webhook processing failed',
-            error: error.message 
-        });
+        res.status(500).json({ message: error.message });
     }
 };

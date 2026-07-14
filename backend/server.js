@@ -4,8 +4,6 @@ const helmet = require('helmet');
 const compression = require('compression');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
-const session = require('express-session');
-const passport = require('passport');
 const { Server } = require('socket.io');
 const http = require('http');
 require('dotenv').config();
@@ -18,8 +16,8 @@ const bloodRequestRoutes = require('./src/routes/bloodRequests');
 const notificationRoutes = require('./src/routes/notifications');
 const publicRoutes = require('./src/routes/public');
 
-// Import Prisma configuration
-const { connectDB } = require('./src/config/prisma');
+// Import Firebase configuration
+const { db, auth } = require('./src/config/firebase');
 
 // Initialize Express app
 const app = express();
@@ -37,8 +35,8 @@ const io = new Server(server, {
 // Make io available to controllers
 app.set('io', io);
 
-// Connect to Database (Prisma)
-connectDB();
+// Firebase is initialized in config/firebase.js
+console.log('✅ Firebase Admin SDK connected');
 
 // Security middleware
 app.use(helmet({
@@ -101,22 +99,6 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Session configuration (using memory store for SQLite, can be upgraded for production)
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret-key',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
-  }
-}));
-
-// Passport middleware
-app.use(passport.initialize());
-app.use(passport.session());
-
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -131,10 +113,10 @@ app.use('/api/public', publicRoutes);
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     status: 'OK',
-    message: 'Blood Alert Admin API is running with Prisma!',
+    message: 'Blood Alert Admin API is running',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
-    database: 'SQLite via Prisma (ready for PostgreSQL upgrade)'
+    database: 'Firebase Firestore'
   });
 });
 
@@ -222,18 +204,11 @@ server.listen(PORT, () => {
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err, promise) => {
   console.log(`❌ Unhandled Promise Rejection: ${err.message}`);
-  console.log('⚠️ Server continuing in demo mode...');
-  // Don't crash the server, just log the error
-  // server.close(() => {
-  //   process.exit(1);
-  // });
 });
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (err) => {
   console.log(`❌ Uncaught Exception: ${err.message}`);
-  console.log('⚠️ Server continuing in demo mode...');
-  // Don't crash the server, just log the error
 });
 
 module.exports = app;

@@ -1,89 +1,68 @@
-const User = require('../models/User');
+const UserService = require('../models/UserService');
 const { validationResult } = require('express-validator');
+const { sendEmail } = require('../utils/emailService');
 
 // @desc    Get all users with pagination and filtering
 // @route   GET /api/users
 // @access  Private (Admin only)
 const getUsers = async (req, res) => {
   try {
-    const {
-      page = 1,
-      limit = 10,
-      search,
-      userType,
-      bloodGroup,
-      isActive,
-      isVerified,
-      sort = 'createdAt:desc'
-    } = req.query;
+    const { page = 1, limit = 10, search, userType, status } = req.query;
+    const skip = (page - 1) * limit;
 
-    // Build filter object
-    const filter = {};
+    // Build Firestore where clause
+    const where = {};
+    if (userType) where.userType = userType;
+    if (status) where.isActive = status === 'active';
 
+    const options = {
+      limit: parseInt(limit),
+      offset: parseInt(skip),
+      where
+    };
+
+    const result = await UserService.getAll(options);
+    
+    // Apply search filter in memory if needed (Firestore doesn't support full-text OR queries easily)
+    let filteredUsers = result.users;
     if (search) {
-      filter.$or = [
-        { firstName: { $regex: search, $options: 'i' } },
-        { lastName: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
-        { phone: { $regex: search, $options: 'i' } }
-      ];
+      const searchLower = search.toLowerCase();
+      filteredUsers = filteredUsers.filter(user => 
+        user.firstName?.toLowerCase().includes(searchLower) ||
+        user.lastName?.toLowerCase().includes(searchLower) ||
+        user.email?.toLowerCase().includes(searchLower) ||
+        user.phone?.includes(search)
+      );
     }
-
-    if (userType) filter.userType = userType;
-    if (bloodGroup) filter.bloodGroup = bloodGroup;
-    if (isActive !== undefined) filter.isActive = isActive === 'true';
-    if (isVerified !== undefined) filter.isVerified = isVerified === 'true';
-
-    // Build sort object
-    const [sortField, sortOrder] = sort.split(':');
-    const sortObj = { [sortField]: sortOrder === 'asc' ? 1 : -1 };
-
-    // Calculate pagination
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-
-    // Get users with pagination
-    const users = await User.find(filter)
-      .sort(sortObj)
-      .skip(skip)
-      .limit(parseInt(limit))
-      .select('-password -loginAttempts -lockUntil');
-
-    // Get total count for pagination
-    const totalUsers = await User.countDocuments(filter);
-    const totalPages = Math.ceil(totalUsers / parseInt(limit));
 
     res.status(200).json({
       success: true,
-      message: 'Users retrieved successfully',
-      data: {
-        users,
-        pagination: {
-          currentPage: parseInt(page),
-          totalPages,
-          totalUsers,
-          hasNextPage: parseInt(page) < totalPages,
-          hasPrevPage: parseInt(page) > 1
-        }
+      data: filteredUsers,
+      pagination: {
+        total: result.total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        pages: Math.ceil(result.total / limit)
       }
     });
-
   } catch (error) {
     console.error('Get users error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to retrieve users',
+      message: 'Failed to fetch users',
       error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
     });
   }
 };
 
-// @desc    Get single user by ID
+// @desc    Get user by ID
 // @route   GET /api/users/:id
 // @access  Private (Admin only)
 const getUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id)
-      .select('-password -loginAttempts -lockUntil');
+    const { id } = req.params;
+
+    const user = await UserService.findById(id);
 
     if (!user) {
       return res.status(404).json({
@@ -94,78 +73,49 @@ const getUserById = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: 'User retrieved successfully',
-      data: {
-        user
-      }
+      data: user
     });
-
   } catch (error) {
     console.error('Get user by ID error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to retrieve user',
+      message: 'Failed to fetch user',
       error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
     });
   }
 };
 
-// @desc    Create new user (donor/patient)
+// @desc    Create a new user
 // @route   POST /api/users
 // @access  Private (Admin only)
 const createUser = async (req, res) => {
   try {
-    // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation failed',
-        errors: errors.array()
-      });
+      return res.status(400).json({ success: false, errors: errors.array() });
     }
 
-    const {
-      firstName,
-      lastName,
-      email,
-      phone,
-      userType,
-      bloodGroup,
-      dateOfBirth,
-      gender,
-      weight,
-      address,
-      medicalHistory,
-      emergencyContact
-    } = req.body;
+    const { firstName, lastName, email, phone, password, bloodGroup, userType, role } = req.body;
 
     // Check if user already exists
-    const existingUser = await User.findOne({
-      $or: [{ email }, { phone }]
-    });
+    const existingUser = await UserService.findByEmail(email);
 
     if (existingUser) {
-      return res.status(400).json({
+      return res.status(409).json({
         success: false,
-        message: 'User with this email or phone already exists'
+        message: 'User with this email already exists'
       });
     }
 
-    // Create user
-    const user = await User.create({
+    const user = await UserService.create({
       firstName,
       lastName,
       email,
       phone,
-      userType,
+      password,
       bloodGroup,
-      dateOfBirth,
-      gender,
-      weight,
-      address,
-      medicalHistory,
-      emergencyContact,
+      userType,
+      role,
       isActive: true,
       isVerified: false
     });
@@ -173,11 +123,8 @@ const createUser = async (req, res) => {
     res.status(201).json({
       success: true,
       message: 'User created successfully',
-      data: {
-        user
-      }
+      data: user
     });
-
   } catch (error) {
     console.error('Create user error:', error);
     res.status(500).json({
@@ -193,34 +140,19 @@ const createUser = async (req, res) => {
 // @access  Private (Admin only)
 const updateUser = async (req, res) => {
   try {
-    const userId = req.params.id;
-    const updateData = req.body;
+    const { id } = req.params;
+    const updateData = { ...req.body };
 
-    // Update user
-    const user = await User.findByIdAndUpdate(
-      userId,
-      updateData,
-      {
-        new: true,
-        runValidators: true
-      }
-    ).select('-password -loginAttempts -lockUntil');
+    // Don't allow password updates through this endpoint
+    delete updateData.password;
 
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      });
-    }
+    const user = await UserService.update(id, updateData);
 
     res.status(200).json({
       success: true,
       message: 'User updated successfully',
-      data: {
-        user
-      }
+      data: user
     });
-
   } catch (error) {
     console.error('Update user error:', error);
     res.status(500).json({
@@ -236,27 +168,15 @@ const updateUser = async (req, res) => {
 // @access  Private (Admin only)
 const deleteUser = async (req, res) => {
   try {
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
-      { isActive: false },
-      { new: true }
-    ).select('-password -loginAttempts -lockUntil');
+    const { id } = req.params;
 
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      });
-    }
+    const user = await UserService.delete(id);
 
     res.status(200).json({
       success: true,
       message: 'User deactivated successfully',
-      data: {
-        user
-      }
+      data: user
     });
-
   } catch (error) {
     console.error('Delete user error:', error);
     res.status(500).json({
@@ -267,19 +187,17 @@ const deleteUser = async (req, res) => {
   }
 };
 
-// @desc    Get dashboard statistics
+// @desc    Get user statistics
 // @route   GET /api/users/stats
 // @access  Private (Admin only)
 const getUserStats = async (req, res) => {
   try {
-    const stats = await User.getDashboardStats();
+    const stats = await UserService.getStats();
 
     res.status(200).json({
       success: true,
-      message: 'User statistics retrieved successfully',
       data: stats
     });
-
   } catch (error) {
     console.error('Get user stats error:', error);
     res.status(500).json({
@@ -303,13 +221,14 @@ const createPublicDonorRegistration = async (req, res) => {
       bloodGroup,
       dateOfBirth,
       address,
-      emergencyContact,
-      medicalHistory,
+      city,
+      state,
       consentGiven
     } = req.body;
 
     // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await UserService.findByEmail(email);
+
     if (existingUser) {
       return res.status(409).json({
         success: false,
@@ -319,42 +238,46 @@ const createPublicDonorRegistration = async (req, res) => {
     }
 
     // Create new donor registration
-    const newDonor = new User({
+    const newDonor = await UserService.create({
       firstName,
       lastName,
       email,
       phone,
+      password: `temp-${Date.now()}`, // Temporary password for public donors
       bloodGroup,
-      dateOfBirth,
+      dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
       address,
-      emergencyContact,
-      medicalHistory,
+      city,
+      state,
       userType: 'donor',
-      registrationSource: 'public_form',
-      status: 'pending_verification',
-      consentGiven,
+      role: 'user',
       isActive: true,
-      isVerified: false,
-      createdAt: new Date()
+      isVerified: false
     });
 
-    await newDonor.save();
-
-    // Send welcome email (optional)
-    // await emailService.sendWelcomeEmail(newDonor);
+    // Send welcome email
+    try {
+      const welcomeMessage = `Welcome to Blood Alert System, ${newDonor.firstName}!\n\nThank you for registering as a blood donor. Your profile has been created with the following details:\n\nName: ${newDonor.firstName} ${newDonor.lastName}\nBlood Group: ${newDonor.bloodGroup}\nEmail: ${newDonor.email}\n\nYou will receive notifications when your blood type is needed. Your donation could save lives!\n\nBest regards,\nBlood Alert Team`;
+      await sendEmail(
+        newDonor.email,
+        'Welcome to Blood Alert System',
+        welcomeMessage
+      );
+      console.log(`📧 Welcome email sent to ${newDonor.email}`);
+    } catch (emailError) {
+      console.error('Failed to send welcome email:', emailError.message);
+    }
 
     res.status(201).json({
       success: true,
       message: 'Donor registration submitted successfully',
-      donorId: newDonor._id,
+      donorId: newDonor.id,
       data: {
         name: `${newDonor.firstName} ${newDonor.lastName}`,
         email: newDonor.email,
-        bloodGroup: newDonor.bloodGroup,
-        status: newDonor.status
+        bloodGroup: newDonor.bloodGroup
       }
     });
-
   } catch (error) {
     console.error('Public donor registration error:', error);
     res.status(400).json({

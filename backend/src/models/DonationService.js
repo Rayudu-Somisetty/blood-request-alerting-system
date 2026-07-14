@@ -1,336 +1,156 @@
-const { prisma } = require('../config/prisma');
+const { db } = require('../config/firebase');
 
 class DonationService {
-  // Create a new donation
+  /**
+   * Generate unique bag number
+   */
+  static generateBagNumber() {
+    const timestamp = Date.now().toString();
+    const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+    return `BAG-${timestamp.slice(-6)}-${random}`;
+  }
+
+  /**
+   * Create a new donation
+   */
   static async create(donationData) {
     try {
       // Generate bag number if donation is completed
       if (donationData.donationStatus === 'completed' && !donationData.bagNumber) {
-        donationData.bagNumber = this.generateBagNumber();
+        donationData.bagNumber = DonationService.generateBagNumber();
       }
 
-      const donation = await prisma.donation.create({
-        data: donationData,
-        include: {
-          donor: true,
-          components: true,
-          notes: true
-        }
-      });
+      const donationRef = db.collection('donations').doc();
+      const finalData = {
+        ...donationData,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
 
-      // Update donor's total donations count
-      if (donationData.donationStatus === 'completed') {
-        await prisma.user.update({
-          where: { id: donationData.donorId },
-          data: {
-            totalDonations: { increment: 1 },
-            lastDonationDate: donationData.donationDate
-          }
-        });
-      }
+      await donationRef.set(finalData);
 
-      return donation;
+      return { id: donationRef.id, ...finalData };
     } catch (error) {
-      throw new Error(`Failed to create donation: ${error.message}`);
+      console.error('Error creating donation:', error);
+      throw error;
     }
   }
 
-  // Find donation by ID
-  static async findById(id) {
+  /**
+   * Get donation by ID
+   */
+  static async getById(donationId) {
     try {
-      return await prisma.donation.findUnique({
-        where: { id },
-        include: {
-          donor: true,
-          components: true,
-          notes: {
-            orderBy: { createdAt: 'desc' }
-          }
-        }
-      });
-    } catch (error) {
-      throw new Error(`Failed to find donation by ID: ${error.message}`);
-    }
-  }
-
-  // Find donation by bag number
-  static async findByBagNumber(bagNumber) {
-    try {
-      return await prisma.donation.findUnique({
-        where: { bagNumber },
-        include: {
-          donor: true,
-          components: true,
-          notes: true
-        }
-      });
-    } catch (error) {
-      throw new Error(`Failed to find donation by bag number: ${error.message}`);
-    }
-  }
-
-  // Get all donations with pagination and filters
-  static async findMany({ 
-    page = 1, 
-    limit = 10, 
-    donationStatus, 
-    donorBloodGroup, 
-    startDate, 
-    endDate,
-    donorId 
-  }) {
-    try {
-      const skip = (page - 1) * limit;
+      const doc = await db.collection('donations').doc(donationId).get();
       
-      const where = {};
-      if (donationStatus) where.donationStatus = donationStatus;
-      if (donorBloodGroup) where.donorBloodGroup = donorBloodGroup;
-      if (donorId) where.donorId = donorId;
-      if (startDate || endDate) {
-        where.donationDate = {};
-        if (startDate) where.donationDate.gte = new Date(startDate);
-        if (endDate) where.donationDate.lte = new Date(endDate);
+      if (!doc.exists) {
+        return null;
+      }
+      
+      return { id: doc.id, ...doc.data() };
+    } catch (error) {
+      console.error('Error getting donation:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all donations with filters
+   */
+  static async getAll(options = {}) {
+    try {
+      const { limit = 10, offset = 0, where = {} } = options;
+
+      let query = db.collection('donations');
+
+      // Apply filters
+      if (where.bloodType) {
+        query = query.where('bloodType', '==', where.bloodType);
+      }
+      if (where.donationStatus) {
+        query = query.where('donationStatus', '==', where.donationStatus);
+      }
+      if (where.donorId) {
+        query = query.where('donorId', '==', where.donorId);
       }
 
-      const [donations, total] = await Promise.all([
-        prisma.donation.findMany({
-          where,
-          skip,
-          take: limit,
-          orderBy: { donationDate: 'desc' },
-          include: {
-            donor: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                email: true,
-                phone: true,
-                bloodGroup: true
-              }
-            },
-            components: true
-          }
-        }),
-        prisma.donation.count({ where })
-      ]);
+      // Get total count
+      const snapshot = await query.get();
+      const total = snapshot.size;
+
+      // Get paginated results
+      const paginatedQuery = query.orderBy('createdAt', 'desc').limit(limit).offset(offset);
+      const docs = await paginatedQuery.get();
+
+      const donations = [];
+      docs.forEach(doc => {
+        donations.push({ id: doc.id, ...doc.data() });
+      });
+
+      return { donations, total };
+    } catch (error) {
+      console.error('Error getting donations:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update donation
+   */
+  static async update(donationId, updateData) {
+    try {
+      const updatePayload = {
+        ...updateData,
+        updatedAt: new Date()
+      };
+
+      await db.collection('donations').doc(donationId).update(updatePayload);
+
+      return DonationService.getById(donationId);
+    } catch (error) {
+      console.error('Error updating donation:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get donation statistics
+   */
+  static async getStats() {
+    try {
+      const donationsRef = db.collection('donations');
+      
+      const allDonations = await donationsRef.get();
+      const completedDonations = await donationsRef.where('donationStatus', '==', 'completed').get();
+      
+      // Get blood type distribution
+      const bloodTypeStats = {};
+      allDonations.forEach(doc => {
+        const bloodType = doc.data().bloodType;
+        bloodTypeStats[bloodType] = (bloodTypeStats[bloodType] || 0) + 1;
+      });
 
       return {
-        donations,
-        total,
-        page,
-        totalPages: Math.ceil(total / limit)
+        totalDonations: allDonations.size,
+        completedDonations: completedDonations.size,
+        bloodTypeStats
       };
     } catch (error) {
-      throw new Error(`Failed to fetch donations: ${error.message}`);
+      console.error('Error getting donation stats:', error);
+      throw error;
     }
   }
 
-  // Update donation
-  static async update(id, updateData) {
+  /**
+   * Delete donation
+   */
+  static async delete(donationId) {
     try {
-      // Generate bag number if status changed to completed
-      if (updateData.donationStatus === 'completed' && !updateData.bagNumber) {
-        updateData.bagNumber = this.generateBagNumber();
-      }
-
-      const donation = await prisma.donation.update({
-        where: { id },
-        data: updateData,
-        include: {
-          donor: true,
-          components: true,
-          notes: true
-        }
-      });
-
-      // Update donor's stats if status changed to completed
-      if (updateData.donationStatus === 'completed') {
-        await prisma.user.update({
-          where: { id: donation.donorId },
-          data: {
-            totalDonations: { increment: 1 },
-            lastDonationDate: donation.donationDate
-          }
-        });
-      }
-
-      return donation;
+      await db.collection('donations').doc(donationId).delete();
+      return { success: true };
     } catch (error) {
-      throw new Error(`Failed to update donation: ${error.message}`);
-    }
-  }
-
-  // Delete donation
-  static async delete(id) {
-    try {
-      // First get the donation to update donor stats
-      const donation = await prisma.donation.findUnique({
-        where: { id },
-        include: { donor: true }
-      });
-
-      if (!donation) {
-        throw new Error('Donation not found');
-      }
-
-      // Delete the donation (components and notes will cascade)
-      await prisma.donation.delete({
-        where: { id }
-      });
-
-      // Update donor's total donations if it was completed
-      if (donation.donationStatus === 'completed') {
-        await prisma.user.update({
-          where: { id: donation.donorId },
-          data: {
-            totalDonations: { decrement: 1 }
-          }
-        });
-      }
-
-      return donation;
-    } catch (error) {
-      throw new Error(`Failed to delete donation: ${error.message}`);
-    }
-  }
-
-  // Add component to donation
-  static async addComponent(donationId, componentData) {
-    try {
-      return await prisma.component.create({
-        data: {
-          ...componentData,
-          donationId
-        }
-      });
-    } catch (error) {
-      throw new Error(`Failed to add component: ${error.message}`);
-    }
-  }
-
-  // Add note to donation
-  static async addNote(donationId, noteData) {
-    try {
-      return await prisma.note.create({
-        data: {
-          ...noteData,
-          donationId
-        }
-      });
-    } catch (error) {
-      throw new Error(`Failed to add note: ${error.message}`);
-    }
-  }
-
-  // Get donation statistics
-  static async getDonationStats() {
-    try {
-      const [
-        totalDonations,
-        pendingDonations,
-        todayDonations,
-        bloodGroupStats,
-        monthlyStats
-      ] = await Promise.all([
-        prisma.donation.count({ where: { donationStatus: 'completed' } }),
-        prisma.donation.count({ where: { donationStatus: 'scheduled' } }),
-        prisma.donation.count({
-          where: {
-            donationDate: {
-              gte: new Date(new Date().setHours(0, 0, 0, 0)),
-              lt: new Date(new Date().setHours(23, 59, 59, 999))
-            },
-            donationStatus: 'completed'
-          }
-        }),
-        prisma.donation.groupBy({
-          by: ['donorBloodGroup'],
-          where: { donationStatus: 'completed' },
-          _count: { donorBloodGroup: true },
-          orderBy: { donorBloodGroup: 'asc' }
-        }),
-        prisma.donation.groupBy({
-          by: ['donationDate'],
-          where: {
-            donationStatus: 'completed',
-            donationDate: {
-              gte: new Date(new Date().getFullYear(), new Date().getMonth() - 6, 1)
-            }
-          },
-          _count: { id: true },
-          orderBy: { donationDate: 'asc' }
-        })
-      ]);
-
-      return {
-        totalDonations,
-        pendingDonations,
-        todayDonations,
-        bloodGroupStats: bloodGroupStats.map(stat => ({
-          _id: stat.donorBloodGroup,
-          count: stat._count.donorBloodGroup
-        })),
-        monthlyStats
-      };
-    } catch (error) {
-      throw new Error(`Failed to get donation stats: ${error.message}`);
-    }
-  }
-
-  // Generate unique bag number
-  static generateBagNumber() {
-    const year = new Date().getFullYear();
-    const month = String(new Date().getMonth() + 1).padStart(2, '0');
-    const day = String(new Date().getDate()).padStart(2, '0');
-    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    
-    return `GIMSR${year}${month}${day}${random}`;
-  }
-
-  // Calculate donation age in days
-  static getDonationAge(donationDate) {
-    return Math.floor((Date.now() - new Date(donationDate)) / (1000 * 60 * 60 * 24));
-  }
-
-  // Get available blood inventory
-  static async getBloodInventory() {
-    try {
-      return await prisma.component.groupBy({
-        by: ['componentType'],
-        where: {
-          status: 'available',
-          expiryDate: { gt: new Date() }
-        },
-        _sum: { volume: true },
-        _count: { id: true }
-      });
-    } catch (error) {
-      throw new Error(`Failed to get blood inventory: ${error.message}`);
-    }
-  }
-
-  // Search donations
-  static async search(query) {
-    try {
-      return await prisma.donation.findMany({
-        where: {
-          OR: [
-            { bagNumber: { contains: query, mode: 'insensitive' } },
-            { donorName: { contains: query, mode: 'insensitive' } },
-            { donorEmail: { contains: query, mode: 'insensitive' } },
-            { donorPhone: { contains: query } }
-          ]
-        },
-        include: {
-          donor: true,
-          components: true
-        },
-        orderBy: { donationDate: 'desc' },
-        take: 20
-      });
-    } catch (error) {
-      throw new Error(`Failed to search donations: ${error.message}`);
+      console.error('Error deleting donation:', error);
+      throw error;
     }
   }
 }

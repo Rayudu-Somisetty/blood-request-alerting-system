@@ -1,6 +1,5 @@
-const User = require('../models/User');
+const UserService = require('../models/UserService');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
 const { validationResult } = require('express-validator');
 
 // Generate JWT Token
@@ -37,63 +36,63 @@ const register = async (req, res) => {
       });
     }
 
-    const mongoose = require('mongoose');
-    
-    // Check if database is connected
-    if (mongoose.connection.readyState !== 1) {
-      return res.status(503).json({
-        success: false,
-        message: 'Database unavailable. Registration requires database connection. Please use demo login: admin@gimsr.com / admin123'
-      });
-    }
-
     const { 
       firstName, 
       lastName, 
       email, 
       phone, 
-      password, 
-      role = 'admin' 
+      password,
+      userType = 'admin',
+      role = 'admin'
     } = req.body;
 
     // Check if user already exists
-    const existingUser = await User.findOne({ 
-      $or: [{ email }, { phone }] 
-    });
-
+    const existingUser = await UserService.findByEmail(email);
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: 'User with this email or phone already exists'
+        message: 'User with this email already exists'
       });
     }
 
-    // Create admin user
-    const user = await User.create({
-      firstName,
-      lastName,
-      email,
-      phone,
+    // For first admin, allow registration without authentication
+    // For subsequent admins, require super_admin authentication
+    const userCount = await UserService.getDashboardStats();
+    if (userCount.totalUsers > 0 && (!req.user || req.user.role !== 'super_admin')) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only super admin can create new admin accounts'
+      });
+    }
+
+    // Create new user
+    const userData = {
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      email: email.toLowerCase().trim(),
+      phone: phone.trim(),
       password,
-      userType: 'admin',
-      role,
+      userType,
+      role: userCount.totalUsers === 0 ? 'super_admin' : role, // First user is super_admin
       isActive: true,
-      isVerified: true,
-      verificationDate: new Date()
-    });
+      isVerified: true // Admin accounts are pre-verified
+    };
+
+    const user = await UserService.create(userData);
 
     // Generate token
-    const token = generateToken(user._id);
+    const token = generateToken(user.id);
     setTokenCookie(res, token);
 
     // Remove password from response
-    user.password = undefined;
+    const userResponse = { ...user };
+    delete userResponse.password;
 
     res.status(201).json({
       success: true,
-      message: 'Admin user registered successfully',
+      message: `${userType} account created successfully`,
       data: {
-        user,
+        user: userResponse,
         token
       }
     });
@@ -108,7 +107,7 @@ const register = async (req, res) => {
   }
 };
 
-// @desc    Login admin user
+// @desc    Authenticate user & get token
 // @route   POST /api/auth/login
 // @access  Public
 const login = async (req, res) => {
@@ -124,59 +123,10 @@ const login = async (req, res) => {
     }
 
     const { email, password } = req.body;
-    const mongoose = require('mongoose');
-
-    // Check if database is connected
-    const isDbConnected = mongoose.connection.readyState === 1;
-
-    // Demo mode when database is not connected OR demo credentials
-    if (!isDbConnected || (email === 'admin@gimsr.com' && password === 'admin123')) {
-      // Only allow demo credentials when database is not connected
-      if (!isDbConnected || (email === 'admin@gimsr.com' && password === 'admin123')) {
-        const demoUser = {
-          _id: 'demo-admin-id',
-          firstName: 'Admin',
-          lastName: 'User',
-          email: 'admin@gimsr.com',
-          phone: '+1234567890',
-          role: 'admin',
-          userType: 'admin',
-          isActive: true,
-          isVerified: true,
-          createdAt: new Date(),
-          lastLogin: new Date()
-        };
-
-        // Generate token
-        const token = generateToken(demoUser._id);
-        setTokenCookie(res, token);
-
-        return res.status(200).json({
-          success: true,
-          message: `Login successful ${!isDbConnected ? '(Demo Mode - DB Disconnected)' : '(Demo Mode)'}`,
-          data: {
-            user: demoUser,
-            token
-          }
-        });
-      }
-
-      // If database is not connected and not demo credentials
-      if (!isDbConnected) {
-        return res.status(503).json({
-          success: false,
-          message: 'Database unavailable. Please use demo credentials: admin@gimsr.com / admin123'
-        });
-      }
-    }
 
     try {
-      // Find user by email and include password (only if database is connected)
-      const user = await User.findOne({ 
-        email, 
-        userType: 'admin' 
-      }).select('+password +loginAttempts +lockUntil');
-
+      const user = await UserService.findByEmail(email.toLowerCase().trim());
+      
       if (!user) {
         return res.status(401).json({
           success: false,
@@ -184,93 +134,44 @@ const login = async (req, res) => {
         });
       }
 
-      // Check if account is locked
-      if (user.isLocked) {
-        return res.status(423).json({
-          success: false,
-          message: 'Account is temporarily locked due to too many failed login attempts'
-        });
-      }
-
-      // Check if account is active
       if (!user.isActive) {
         return res.status(401).json({
           success: false,
-          message: 'Account is deactivated. Contact administrator.'
+          message: 'Account is deactivated. Please contact administrator.'
         });
       }
 
-      // Validate password
-      const isPasswordValid = await user.comparePassword(password);
-
+      const isPasswordValid = await UserService.comparePassword(password, user.password);
+      
       if (!isPasswordValid) {
-        // Increment login attempts
-        await user.incLoginAttempts();
-        
         return res.status(401).json({
           success: false,
           message: 'Invalid email or password'
         });
       }
 
-      // Reset login attempts on successful login
-      if (user.loginAttempts && user.loginAttempts > 0) {
-        await user.resetLoginAttempts();
-      }
-
-      // Update last login
-      user.lastLogin = new Date();
-      await user.save();
-
-      // Generate token
-      const token = generateToken(user._id);
+      const token = generateToken(user.id);
       setTokenCookie(res, token);
 
-      // Remove sensitive data from response
-      user.password = undefined;
-      user.loginAttempts = undefined;
-      user.lockUntil = undefined;
+      const userResponse = { ...user };
+      delete userResponse.password;
 
       res.status(200).json({
         success: true,
         message: 'Login successful',
         data: {
-          user,
+          user: userResponse,
           token
         }
       });
 
-    } catch (dbError) {
-      // If database error and using demo credentials, fallback to demo mode
-      if (email === 'admin@gimsr.com' && password === 'admin123') {
-        const demoUser = {
-          _id: 'demo-admin-id',
-          firstName: 'Admin',
-          lastName: 'User',
-          email: 'admin@gimsr.com',
-          phone: '+1234567890',
-          role: 'admin',
-          userType: 'admin',
-          isActive: true,
-          isVerified: true,
-          createdAt: new Date(),
-          lastLogin: new Date()
-        };
-
-        const token = generateToken(demoUser._id);
-        setTokenCookie(res, token);
-
-        return res.status(200).json({
-          success: true,
-          message: 'Login successful (Demo Mode - DB Unavailable)',
-          data: {
-            user: demoUser,
-            token
-          }
-        });
-      }
-      
-      throw dbError; // Re-throw if not demo credentials
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Login failed',
+        error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+      });
     }
 
   } catch (error) {
@@ -283,13 +184,40 @@ const login = async (req, res) => {
   }
 };
 
-// @desc    Get current logged in admin
+// @desc    Logout user
+// @route   POST /api/auth/logout
+// @access  Private
+const logout = (req, res) => {
+  try {
+    // Clear the token cookie
+    res.cookie('token', '', {
+      expires: new Date(0),
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict'
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Logged out successfully'
+    });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Logout failed',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
+  }
+};
+
+// @desc    Get current authenticated user
 // @route   GET /api/auth/me
 // @access  Private
 const getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
-
+    const user = await UserService.findById(req.user.id);
+    
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -297,10 +225,13 @@ const getMe = async (req, res) => {
       });
     }
 
+    const userResponse = { ...user };
+    delete userResponse.password;
+
     res.status(200).json({
       success: true,
       data: {
-        user
+        user: userResponse
       }
     });
 
@@ -314,47 +245,11 @@ const getMe = async (req, res) => {
   }
 };
 
-// @desc    Logout admin user
-// @route   POST /api/auth/logout
-// @access  Private
-const logout = async (req, res) => {
-  try {
-    // Clear token cookie
-    res.cookie('token', 'none', {
-      expires: new Date(Date.now() + 10 * 1000),
-      httpOnly: true
-    });
-
-    // If using session-based auth, destroy session
-    if (req.session) {
-      req.session.destroy((err) => {
-        if (err) {
-          console.error('Session destruction error:', err);
-        }
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: 'Logged out successfully'
-    });
-
-  } catch (error) {
-    console.error('Logout error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Logout failed',
-      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
-    });
-  }
-};
-
-// @desc    Update password
-// @route   PUT /api/auth/updatepassword
+// @desc    Update user password
+// @route   PUT /api/auth/password
 // @access  Private
 const updatePassword = async (req, res) => {
   try {
-    // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -366,8 +261,7 @@ const updatePassword = async (req, res) => {
 
     const { currentPassword, newPassword } = req.body;
 
-    // Get user with password
-    const user = await User.findById(req.user.id).select('+password');
+    const user = await UserService.findById(req.user.id);
 
     if (!user) {
       return res.status(404).json({
@@ -376,8 +270,7 @@ const updatePassword = async (req, res) => {
       });
     }
 
-    // Check current password
-    const isCurrentPasswordValid = await user.comparePassword(currentPassword);
+    const isCurrentPasswordValid = await UserService.comparePassword(currentPassword, user.password);
 
     if (!isCurrentPasswordValid) {
       return res.status(401).json({
@@ -386,12 +279,9 @@ const updatePassword = async (req, res) => {
       });
     }
 
-    // Update password
-    user.password = newPassword;
-    await user.save();
+    await UserService.update(user.id, { password: newPassword });
 
-    // Generate new token
-    const token = generateToken(user._id);
+    const token = generateToken(user.id);
     setTokenCookie(res, token);
 
     res.status(200).json({

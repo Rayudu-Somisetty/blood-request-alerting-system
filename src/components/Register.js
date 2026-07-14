@@ -3,8 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
-import emailOtpService from '../services/emailOtpService';
-import { Container, Row, Col, Card, Form, Button, Spinner, InputGroup } from 'react-bootstrap';
+import firebaseService from '../firebase/firebaseService';
+import emailVerificationService from '../firebase/emailVerificationService';
+
+import { Container, Row, Col, Card, Form, Button, Spinner } from 'react-bootstrap';
+
 
 const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -13,6 +16,9 @@ const Register = () => {
   const [step, setStep] = useState(1); // 1: Form, 2: OTP Verification
   const [registrationData, setRegistrationData] = useState(null);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [emailVerificationSent, setEmailVerificationSent] = useState(false);
+  const [verificationChecking, setVerificationChecking] = useState(false);
+
   const [resendTimer, setResendTimer] = useState(0);
   const [otpSent, setOtpSent] = useState(false);
   
@@ -96,32 +102,29 @@ const Register = () => {
     }
   };
 
-  // Send OTP to email
-  const handleSendOTP = async () => {
+  // Send Firebase email verification to the user
+  const handleSendEmailVerification = async () => {
+
     if (!registrationData?.email) {
       toast.error('Email address is required');
       return;
     }
 
     setIsLoading(true);
-    
     try {
-      console.log('Sending OTP to email:', registrationData.email);
-      
-      const result = await emailOtpService.sendOTP(registrationData.email);
-      console.log('OTP send result:', result);
-      
-      if (result.success) {
-        toast.success('OTP sent to your email! Please check.');
-        setResendTimer(60); // 60 seconds resend timer
-        setOtpSent(true); // Enable OTP inputs
-      } else {
-        toast.error(result.error || 'Failed to send OTP. Please try again.');
-        console.error('OTP send failed:', result);
-      }
+      // Ensure user is created and signed in
+      await registerUser(registrationData);
+
+      // Send verification email to the currently signed-in user
+      await emailVerificationService.sendVerificationEmail();
+
+      toast.success('Verification email sent. Please check your inbox.');
+      setEmailVerificationSent(true);
+      setResendTimer(60);
+      setOtpSent(true);
     } catch (error) {
-      console.error('Error sending OTP:', error);
-      toast.error('Failed to send OTP. Please try again.');
+      console.error('Error sending email verification:', error);
+      toast.error(error.message || 'Failed to send verification email. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -129,59 +132,33 @@ const Register = () => {
 
   // Handle OTP verification and complete registration
   const handleOtpVerification = async () => {
-    const otpString = otp.join('');
-    
-    if (otpString.length !== 6) {
-      toast.error('Please enter the complete 6-digit OTP');
-      return;
-    }
-
     setIsLoading(true);
-    
     try {
-      console.log('Verifying OTP:', otpString);
-      
-      // Verify OTP with email
-      const verificationResult = emailOtpService.verifyOTP(registrationData.email, otpString);
-      console.log('OTP verification result:', verificationResult);
-      
-      if (verificationResult.success) {
-        console.log('OTP verified, creating user account...');
-        
-        try {
-          // OTP verified - now create user with email/password auth
-          const result = await registerUser(registrationData);
-          
-          console.log('User registration result:', result);
-          
-          if (result && result.success) {
-            toast.success('Registration successful! Email verified!');
-            reset();
-            navigate('/user/dashboard');
-          } else {
-            throw new Error(result?.message || 'Registration failed. Please try again.');
-          }
-        } catch (registrationError) {
-          console.error('Error during registration:', registrationError);
-          toast.error(registrationError.message || 'Registration failed. Please try again.');
-        }
-      } else {
-        toast.error(verificationResult.error || 'Invalid OTP. Please try again.');
-        console.error('OTP verification failed:', verificationResult);
-        // Clear OTP on error
-        setOtp(['', '', '', '', '', '']);
-        setTimeout(() => otpInputRefs.current[0]?.focus(), 100);
+      setVerificationChecking(true);
+      // Reload current user and check emailVerified
+      await emailVerificationService.reloadCurrentUser();
+      const verified = await emailVerificationService.isEmailVerified();
+
+      if (!verified) {
+        toast.error('Email not verified yet. Please check your inbox and try again.');
+        return;
       }
+
+      toast.success('Registration successful! Email verified!');
+      reset();
+      navigate('/user/dashboard');
     } catch (error) {
-      console.error('Error verifying OTP:', error);
-      toast.error('Failed to verify OTP. Please try again.');
+      console.error('Email verification check error:', error);
+      toast.error(error.message || 'Failed to verify email. Please try again.');
     } finally {
+      setVerificationChecking(false);
       setIsLoading(false);
     }
   };
 
   // Handle resend OTP
   const handleResendOtp = async () => {
+
     if (resendTimer > 0) return;
     
     setIsLoading(true);
@@ -189,18 +166,14 @@ const Register = () => {
     setOtp(['', '', '', '', '', '']);
     
     try {
-      console.log('Resending OTP to email:', registrationData.email);
-      
-      const result = await emailOtpService.sendOTP(registrationData.email);
-      
-      if (result.success) {
-        toast.success('OTP resent successfully!');
-        setResendTimer(60);
-        setOtpSent(true);
-        setTimeout(() => otpInputRefs.current[0]?.focus(), 100);
-      } else {
-        toast.error(result.error || 'Failed to resend OTP');
-      }
+      console.log('Resending verification email to:', registrationData.email);
+
+      // Send verification email again
+      await emailVerificationService.sendVerificationEmail();
+
+      toast.success('Verification email resent successfully!');
+      setResendTimer(60);
+      setOtpSent(true);
     } catch (error) {
       console.error('Error resending OTP:', error);
       toast.error('Failed to resend OTP. Please try again.');
@@ -210,6 +183,7 @@ const Register = () => {
   };
 
   const onSubmit = async (data) => {
+
     setIsLoading(true);
     
     try {
@@ -240,7 +214,7 @@ const Register = () => {
       // Store registration data and move to OTP verification
       setRegistrationData(formattedData);
       setStep(2);
-      toast.info('Please verify your phone number to complete registration');
+      toast.info('Please verify your email to complete registration');
     } catch (error) {
       console.error('Form submission error:', error);
       toast.error('Please check your information and try again.');

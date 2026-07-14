@@ -1,15 +1,20 @@
 import React, { useState } from 'react';
-import useRealTimeNotifications from '../../hooks/useRealTimeNotifications';
 import './RealTimeNotifications.css';
 
 const RealTimeNotifications = () => {
-  const { 
-    notifications, 
-    isConnected, 
-    markAsRead, 
-    clearNotifications, 
-    unreadCount 
-  } = useRealTimeNotifications();
+  const [notifications, setNotifications] = useState([]);
+  const isConnected = false;
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const markAsRead = (notificationId) => {
+    setNotifications(prev => prev.map(n => 
+      n.id === notificationId ? { ...n, read: true } : n
+    ));
+  };
+
+  const clearNotifications = () => {
+    setNotifications([]);
+  };
   
   const [expandedNotifications, setExpandedNotifications] = useState(new Set());
 

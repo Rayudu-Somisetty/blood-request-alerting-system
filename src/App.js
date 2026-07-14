@@ -21,7 +21,6 @@ import Register from './components/Register';
 import ForgotPassword from './components/ForgotPassword';
 import Profile from './components/Profile';
 import Privacy from './components/Privacy';
-import AdminSetup from './components/AdminSetup';
 
 // Admin Components
 import Layout from './admin-components/common/Layout';
@@ -218,9 +217,6 @@ function App() {
             
             {/* Privacy Policy Route */}
             <Route path="/privacy" element={<Privacy />} />
-            
-            {/* Admin Setup Route */}
-            <Route path="/admin-setup" element={<AdminSetup />} />
             
             {/* Profile Route */}
             <Route 
