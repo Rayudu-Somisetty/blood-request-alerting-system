@@ -36,22 +36,38 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-vh-100 d-flex align-items-center" style={{ background: 'linear-gradient(135deg, #1f2937 0%, #374151 100%)' }}>
+    <div className="min-vh-100 d-flex align-items-center py-4" style={{ background: 'linear-gradient(135deg, #fff5f5 0%, #f8fafc 52%, #fee2e2 100%)' }}>
       <div className="container">
-        <div className="row justify-content-center">
-          <div className="col-md-6 col-lg-5">
-            <div className="custom-card shadow-lg">
-              {/* Header */}
-              <div className="custom-card-header text-center">
-                <div className="mb-3">
-                  <i className="bi bi-key-fill" style={{ fontSize: '3rem' }}></i>
+        <div className="row justify-content-center align-items-stretch g-0 shadow-lg rounded-4 overflow-hidden bg-white" style={{ maxWidth: '980px', margin: '0 auto' }}>
+          <div className="col-lg-5 d-none d-lg-flex flex-column justify-content-between text-white p-5" style={{ background: 'linear-gradient(150deg, #991b1b 0%, #dc2626 55%, #f87171 100%)' }}>
+            <div>
+              <div className="d-flex align-items-center gap-2 mb-4">
+                <div className="bg-white text-danger rounded-circle d-inline-flex align-items-center justify-content-center" style={{ width: 42, height: 42 }}>
+                  <i className="bi bi-heart-pulse-fill fs-4"></i>
                 </div>
-                <h2 className="mb-0 fw-bold">Reset Password</h2>
-                <p className="mb-0 opacity-75">Blood Alert System</p>
+                <span className="fw-bold fs-5">Blood Request Alerting System</span>
+              </div>
+              <h1 className="h2 fw-bold">Your account is safe with us.</h1>
+              <p className="opacity-75 mb-4">Reset your password securely, then get back to helping save lives.</p>
+            </div>
+            <img src="/images/blood-donation-reset-illustration.png" alt="A blood donor being cared for by a healthcare professional" className="img-fluid rounded-4 bg-white" style={{ maxHeight: '400px', objectFit: 'cover', objectPosition: 'center top' }} />
+            <small className="opacity-75 mt-4"><i className="bi bi-shield-check me-1"></i>Secure, private, and verified</small>
+          </div>
+          <div className="col-lg-7">
+            <div className="h-100">
+              {/* Header */}
+              <div className="text-center pt-5 px-4">
+                <div className="mb-3">
+                  <span className="rounded-circle bg-danger-subtle text-danger d-inline-flex align-items-center justify-content-center" style={{ width: 64, height: 64 }}>
+                    <i className="bi bi-key-fill fs-2"></i>
+                  </span>
+                </div>
+                <h2 className="mb-1 fw-bold text-dark">Reset your password</h2>
+                <p className="mb-0 text-muted">Blood Request Alerting System</p>
               </div>
 
               {/* Reset Form */}
-              <div className="card-body p-4">
+              <div className="card-body p-4 p-md-5">
                 {!emailSent ? (
                   <>
                     <h5 className="text-center mb-3 text-dark">Forgot Your Password?</h5>
@@ -101,7 +117,7 @@ const ForgotPassword = () => {
                       {/* Submit Button */}
                       <button
                         type="submit"
-                        className="btn btn-primary w-100 py-2 fw-bold"
+                        className="btn btn-danger w-100 py-3 fw-bold"
                         disabled={isLoading}
                       >
                         {isLoading ? (
@@ -173,17 +189,17 @@ const ForgotPassword = () => {
               </div>
 
               {/* Footer */}
-              <div className="card-footer bg-light text-center py-3">
+              <div className="border-top text-center py-3">
                 <small className="text-muted">
                   <i className="bi bi-shield-check me-1 text-red"></i>
                   Secure Password Reset
                 </small>
               </div>
             </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
   );
 };
 

@@ -61,40 +61,14 @@ const Login = () => {
             <span className="fs-4 fw-bold tracking-wider">BLOOD ALERT</span>
           </div>
 
-          {/* Middle Content */}
-          <div className="my-auto" style={{ zIndex: 2, maxWidth: '480px' }}>
-            <h1 className="display-4 fw-bold mb-4" style={{ lineHeight: '1.2' }}>
-              Every Drop <br />
-              <span style={{ color: '#ffcdd2' }}>Saves Lives.</span>
+          <div className="my-auto" style={{ zIndex: 2, maxWidth: '420px' }}>
+            <span className="badge rounded-pill bg-white bg-opacity-15 px-3 py-2 mb-4">Welcome back</span>
+            <h1 className="display-5 fw-bold mb-3" style={{ lineHeight: '1.2' }}>
+              Help is only a<br /><span style={{ color: '#ffcdd2' }}>few clicks away.</span>
             </h1>
-            <p className="lead opacity-90 mb-5">
-              Welcome back to the Blood Alert community. Join thousands of heroes coordinating emergency blood requests and donations in real time.
+            <p className="lead opacity-75 mb-0">
+              Sign in to manage blood requests and respond when your community needs you.
             </p>
-
-            <div className="row g-4">
-              <div className="col-6">
-                <div className="d-flex align-items-center">
-                  <div className="bg-white bg-opacity-15 rounded-3 p-3 me-3">
-                    <i className="bi bi-activity fs-3 text-white"></i>
-                  </div>
-                  <div>
-                    <h5 className="mb-0 fw-bold">Live Alerting</h5>
-                    <small className="opacity-75">Instant notifications</small>
-                  </div>
-                </div>
-              </div>
-              <div className="col-6">
-                <div className="d-flex align-items-center">
-                  <div className="bg-white bg-opacity-15 rounded-3 p-3 me-3">
-                    <i className="bi bi-shield-fill-check fs-3 text-white"></i>
-                  </div>
-                  <div>
-                    <h5 className="mb-0 fw-bold">Secure Auth</h5>
-                    <small className="opacity-75">Protected records</small>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Bottom Footer */}
@@ -112,12 +86,12 @@ const Login = () => {
                 <i className="bi bi-heart-pulse-fill text-white fs-2"></i>
               </div>
               <h2 className="fw-bold text-dark mb-1">Blood Alert</h2>
-              <p className="text-muted">User Portal</p>
+              <p className="text-muted mb-0">Blood Request Alerting System</p>
             </div>
 
             <div className="mb-4 d-none d-md-block">
               <h2 className="fw-bold text-dark mb-1">Welcome Back</h2>
-              <p className="text-muted">Please sign in to access your portal.</p>
+              <p className="text-muted mb-0">Sign in to continue.</p>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="mt-2">

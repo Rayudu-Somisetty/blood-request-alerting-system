@@ -254,20 +254,6 @@ const Profile = () => {
     return colors[bloodGroup] || 'secondary';
   };
 
-  const getCompatibleBloodGroups = (userBloodGroup) => {
-    const compatibility = {
-      'O-': { canDonateTo: ['O-', 'O+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+'], canReceiveFrom: ['O-'] },
-      'O+': { canDonateTo: ['O+', 'A+', 'B+', 'AB+'], canReceiveFrom: ['O-', 'O+'] },
-      'A-': { canDonateTo: ['A-', 'A+', 'AB-', 'AB+'], canReceiveFrom: ['O-', 'A-'] },
-      'A+': { canDonateTo: ['A+', 'AB+'], canReceiveFrom: ['O-', 'O+', 'A-', 'A+'] },
-      'B-': { canDonateTo: ['B-', 'B+', 'AB-', 'AB+'], canReceiveFrom: ['O-', 'B-'] },
-      'B+': { canDonateTo: ['B+', 'AB+'], canReceiveFrom: ['O-', 'O+', 'B-', 'B+'] },
-      'AB-': { canDonateTo: ['AB-', 'AB+'], canReceiveFrom: ['O-', 'A-', 'B-', 'AB-'] },
-      'AB+': { canDonateTo: ['AB+'], canReceiveFrom: ['O-', 'O+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+'] }
-    };
-    return compatibility[userBloodGroup] || { canDonateTo: [], canReceiveFrom: [] };
-  };
-
   const getDaysUntilEligible = () => {
     if (!profileData.nextEligibleDate) return 0;
     const nextDate = new Date(profileData.nextEligibleDate);
@@ -281,6 +267,15 @@ const Profile = () => {
     <>
       <Navigation />
       <Container className="my-5">
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <p className="text-danger fw-semibold small text-uppercase mb-1">My account</p>
+            <h1 className="h3 fw-bold mb-0">Profile</h1>
+          </div>
+          <Button variant="outline-danger" onClick={handleEditProfile}>
+            <i className="bi bi-pencil me-2"></i>Edit profile
+          </Button>
+        </div>
         {/* Loading State */}
         {loading ? (
           <div className="text-center py-5">
@@ -343,26 +338,6 @@ const Profile = () => {
                   </div>
                 </div>
 
-                {/* Blood Compatibility Quick View */}
-                <div className="mb-3 p-2 bg-light rounded">
-                  <h6 className="text-center text-primary mb-2">
-                    <i className="bi bi-heart-pulse me-1"></i>Blood Compatibility
-                  </h6>
-                  <div className="row">
-                    <div className="col-6 text-center">
-                      <small className="text-success d-block">Can Donate To:</small>
-                      <Badge bg="success" className="fs-6">
-                        {profileData.bloodGroup ? getCompatibleBloodGroups(profileData.bloodGroup).canDonateTo.length : 0} Groups
-                      </Badge>
-                    </div>
-                    <div className="col-6 text-center">
-                      <small className="text-info d-block">Can Receive From:</small>
-                      <Badge bg="info" className="fs-6">
-                        {profileData.bloodGroup ? getCompatibleBloodGroups(profileData.bloodGroup).canReceiveFrom.length : 0} Groups
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
               </Card.Body>
             </Card>
 
@@ -413,52 +388,13 @@ const Profile = () => {
               </Card.Body>
             </Card>
 
-            {/* Membership Status */}
-            <Card className="shadow-sm mt-3">
-              <Card.Body>
-                <h6 className="card-title mb-3">
-                  <i className="bi bi-shield-check text-success me-2"></i>
-                  Membership Status
-                </h6>
-                <div className="text-center">
-                  <div className="mb-2">
-                    <Badge bg="success" className="px-3 py-2">
-                      <i className="bi bi-check-circle me-1"></i>
-                      Active Donor
-                    </Badge>
-                  </div>
-                  <small className="text-muted d-block">
-                    Member since {new Date(profileData.registrationDate).toLocaleDateString('en-US', { 
-                      month: 'long', 
-                      year: 'numeric' 
-                    })}
-                  </small>
-                  <hr className="my-3" />
-                  <div className="d-flex justify-content-between align-items-center">
-                    <small className="text-muted">Donation Level:</small>
-                    <Badge bg={profileData.totalDonations >= 10 ? 'warning' : profileData.totalDonations >= 5 ? 'info' : 'secondary'}>
-                      {profileData.totalDonations >= 10 ? 'Gold' : profileData.totalDonations >= 5 ? 'Silver' : 'Bronze'}
-                    </Badge>
-                  </div>
-                </div>
-              </Card.Body>
-            </Card>
           </Col>
 
           <Col lg={8}>
             {/* Main Content Tabs */}
             <Card className="shadow-sm">
               <Card.Body>
-                <div className="d-flex justify-content-between align-items-center mb-3">
-                  <h5 className="mb-0">Profile Details</h5>
-                  <Button 
-                    variant="primary" 
-                    onClick={handleEditProfile}
-                    className="px-3"
-                  >
-                    <i className="bi bi-pencil me-2"></i>Edit Profile
-                  </Button>
-                </div>
+                <h5 className="mb-3">Profile details</h5>
                 <Tabs activeKey={activeTab} onSelect={(k) => setActiveTab(k)} className="mb-4">
                   <Tab eventKey="overview" title="Overview">
                     <Row>
@@ -519,50 +455,6 @@ const Profile = () => {
                       </Col>
                     </Row>
 
-                    {/* Blood Compatibility Section */}
-                    <Card className="border-0 bg-light">
-                      <Card.Body>
-                        <h6 className="text-success mb-3">
-                          <i className="bi bi-heart-pulse-fill me-2"></i>Blood Compatibility Chart
-                        </h6>
-                        <Row>
-                          <Col md={6}>
-                            <div className="p-3 bg-white rounded">
-                              <h6 className="text-success mb-2">
-                                <i className="bi bi-arrow-right-circle me-1"></i>Can Donate To:
-                              </h6>
-                              <div className="d-flex flex-wrap gap-1">
-                                {profileData.bloodGroup ? getCompatibleBloodGroups(profileData.bloodGroup).canDonateTo.map((group, index) => (
-                                  <Badge key={index} bg={getBloodGroupBadgeColor(group)} className="me-1 mb-1">
-                                    {group}
-                                  </Badge>
-                                )) : <span className="text-muted">Blood group not specified</span>}
-                              </div>
-                              <small className="text-muted d-block mt-2">
-                                {profileData.bloodGroup ? `You can help ${getCompatibleBloodGroups(profileData.bloodGroup).canDonateTo.length} blood group(s)` : 'Please specify your blood group'}
-                              </small>
-                            </div>
-                          </Col>
-                          <Col md={6}>
-                            <div className="p-3 bg-white rounded">
-                              <h6 className="text-info mb-2">
-                                <i className="bi bi-arrow-left-circle me-1"></i>Can Receive From:
-                              </h6>
-                              <div className="d-flex flex-wrap gap-1">
-                                {profileData.bloodGroup ? getCompatibleBloodGroups(profileData.bloodGroup).canReceiveFrom.map((group, index) => (
-                                  <Badge key={index} bg={getBloodGroupBadgeColor(group)} className="me-1 mb-1">
-                                    {group}
-                                  </Badge>
-                                )) : <span className="text-muted">Blood group not specified</span>}
-                              </div>
-                              <small className="text-muted d-block mt-2">
-                                {profileData.bloodGroup ? `You can receive from ${getCompatibleBloodGroups(profileData.bloodGroup).canReceiveFrom.length} blood group(s)` : 'Please specify your blood group'}
-                              </small>
-                            </div>
-                          </Col>
-                        </Row>
-                      </Card.Body>
-                    </Card>
                   </Tab>
 
                   <Tab eventKey="donations" title="Donation History">

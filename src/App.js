@@ -13,8 +13,6 @@ import AboutContact from './components/AboutContact';
 import RequestBlood from './components/RequestBlood';
 import DonateBloodRequests from './components/DonateBloodRequests';
 import QuickLinks from './components/QuickLinks';
-import LiveStats from './components/LiveStats';
-import Features from './components/Features';
 import Footer from './components/Footer';
 import Login from './components/Login';
 import Register from './components/Register';
@@ -134,8 +132,6 @@ const HomePage = () => (
     <Navigation />
     <Hero />
     <QuickLinks />
-    <LiveStats />
-    <Features />
     <Footer />
   </>
 );

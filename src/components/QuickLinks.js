@@ -1,6 +1,6 @@
 import React from 'react';
 import { Container, Row, Col, Card } from 'react-bootstrap';
-import { FaDonate, FaHandHoldingMedical, FaUserPlus } from 'react-icons/fa';
+import { FaDonate, FaHandHoldingMedical } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
 const QuickLinks = () => {
@@ -16,12 +16,6 @@ const QuickLinks = () => {
       icon: <FaHandHoldingMedical size={40} className="text-danger mb-3" />,
       description: 'Submit a blood requirement request',
       path: '/request'
-    },
-    {
-      title: 'Register for Campaigns',
-      icon: <FaUserPlus size={40} className="text-danger mb-3" />,
-      description: 'Join our community of lifesavers',
-      path: '/campaigns'
     }
   ];
 
@@ -30,7 +24,7 @@ const QuickLinks = () => {
       <Container>
         <Row>
           {links.map((link, index) => (
-            <Col md={4} key={index} className="mb-4 mb-md-0">
+            <Col md={6} key={index} className="mb-4 mb-md-0">
               <Card 
                 as={Link} 
                 to={link.path}
@@ -39,7 +33,7 @@ const QuickLinks = () => {
               >
                 <Card.Body>
                   {link.icon}
-                  <Card.Title className="h4 mb-3 text-dark">{link.title}</Card.Title>
+                  <Card.Title className="h4 mb-2 text-dark">{link.title}</Card.Title>
                   <Card.Text className="text-muted">{link.description}</Card.Text>
                 </Card.Body>
               </Card>

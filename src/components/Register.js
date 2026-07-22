@@ -25,8 +25,12 @@ const Register = () => {
     handleSubmit,
     formState: { errors },
     watch,
-    reset
-  } = useForm();
+    reset,
+    trigger
+  } = useForm({
+    mode: 'onChange',
+    reValidateMode: 'onChange'
+  });
 
   // Blood groups for dropdown
   const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
@@ -42,7 +46,18 @@ const Register = () => {
     'Dadra and Nagar Haveli and Daman and Diu', 'Lakshadweep', 'Andaman and Nicobar Islands'
   ];
 
-  const password = watch('password');
+  const password = watch('password', '');
+  const passwordRequirements = [
+    { label: 'At least 8 characters', met: password.length >= 8 },
+    { label: 'One uppercase letter', met: /[A-Z]/.test(password) },
+    { label: 'One lowercase letter', met: /[a-z]/.test(password) },
+    { label: 'One number', met: /\d/.test(password) },
+    { label: 'One special character', met: /[^A-Za-z0-9]/.test(password) }
+  ];
+
+  useEffect(() => {
+    if (password) trigger('confirmPassword');
+  }, [password, trigger]);
 
   // Countdown timer for resend button
   useEffect(() => {
@@ -493,12 +508,12 @@ const Register = () => {
                             {...register('password', {
                               required: 'Password is required',
                               minLength: {
-                                value: 6,
-                                message: 'Password must be at least 6 characters'
+                                value: 8,
+                                message: 'Password must be at least 8 characters'
                               },
                               pattern: {
-                                value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-                                message: 'Password must contain at least one uppercase letter, one lowercase letter, and one number'
+                                value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/,
+                                message: 'Password does not meet all security requirements'
                               }
                             })}
                             isInvalid={!!errors.password}
@@ -512,6 +527,14 @@ const Register = () => {
                           <Form.Control.Feedback type="invalid">
                             {errors.password?.message}
                           </Form.Control.Feedback>
+                        </div>
+                        <div className="mt-2 small" aria-live="polite">
+                          {passwordRequirements.map((requirement) => (
+                            <div key={requirement.label} className={requirement.met ? 'text-success' : 'text-muted'}>
+                              <i className={`bi ${requirement.met ? 'bi-check-circle-fill' : 'bi-circle'} me-2`}></i>
+                              {requirement.label}
+                            </div>
+                          ))}
                         </div>
                       </Col>
 
