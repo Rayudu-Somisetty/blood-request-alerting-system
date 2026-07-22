@@ -8,209 +8,121 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm();
+  const { register, handleSubmit, formState: { errors } } = useForm({ mode: 'onBlur' });
 
   const onSubmit = async (data) => {
     setIsLoading(true);
-
     try {
       const result = await login(data);
-      if (result && result.success) {
-        // Success message will be shown via the PublicRoute redirect logic
-        // No need to manually navigate here, PublicRoute will handle the redirect
-        toast.success('Login successful!');
+      if (result?.success) {
+        toast.success('Welcome back!');
       } else {
-        toast.error('Invalid credentials. Please try again.');
+        toast.error('Invalid email or password.');
       }
     } catch (error) {
       console.error('Login error:', error);
-      toast.error('Login failed. Please check your credentials.');
+      toast.error('Login failed. Please check your details and try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-vh-100 d-flex align-items-stretch" style={{ background: '#f4f6f9' }}>
-      <div className="row g-0 w-100">
-        {/* Left Visual Column - Hidden on mobile, visible on desktop (md and up) */}
-        <div className="col-md-6 d-none d-md-flex flex-column justify-content-between p-5 text-white"
-          style={{
-            background: 'linear-gradient(135deg, #b31010 0%, #800a0a 100%)',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-          {/* Decorative Background Pattern */}
-          <div style={{
-            position: 'absolute',
-            top: 0, left: 0, right: 0, bottom: 0,
-            backgroundImage: 'radial-gradient(circle at 20% 30%, rgba(255,255,255,0.08) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(255,255,255,0.05) 0%, transparent 40%)',
-            pointerEvents: 'none'
-          }}></div>
-
-          {/* Top Logo */}
-          <div className="d-flex align-items-center mb-5" style={{ zIndex: 2 }}>
-            <div className="bg-white rounded-circle p-2 d-flex align-items-center justify-content-center me-3 shadow-sm" style={{ width: '45px', height: '45px' }}>
-              <i className="bi bi-heart-pulse-fill text-danger fs-4"></i>
+    <main className="min-vh-100">
+      <div className="row g-0 min-vh-100">
+          <section className="col-lg-5 d-none d-lg-flex flex-column p-5 text-white position-relative overflow-hidden" style={{ background: 'linear-gradient(145deg, #7f1d1d 0%, #b91c1c 48%, #ef4444 100%)' }}>
+            <div className="position-absolute rounded-circle bg-white opacity-10" style={{ width: 360, height: 360, right: '-130px', top: '-130px' }}></div>
+            <div className="position-absolute rounded-circle border border-white opacity-25" style={{ width: 250, height: 250, left: '-100px', bottom: '90px' }}></div>
+            <div className="d-flex align-items-center gap-2 mb-5 position-relative">
+              <span className="bg-white text-danger rounded-circle d-inline-flex align-items-center justify-content-center" style={{ width: 44, height: 44 }}>
+                <i className="bi bi-heart-pulse-fill fs-4"></i>
+              </span>
+              <span className="fw-bold fs-4">Blood Alert</span>
             </div>
-            <span className="fs-4 fw-bold tracking-wider">BLOOD ALERT</span>
-          </div>
-
-          <div className="my-auto" style={{ zIndex: 2, maxWidth: '420px' }}>
-            <span className="badge rounded-pill bg-white bg-opacity-15 px-3 py-2 mb-4">Welcome back</span>
-            <h1 className="display-5 fw-bold mb-3" style={{ lineHeight: '1.2' }}>
-              Help is only a<br /><span style={{ color: '#ffcdd2' }}>few clicks away.</span>
-            </h1>
-            <p className="lead opacity-75 mb-0">
-              Sign in to manage blood requests and respond when your community needs you.
-            </p>
-          </div>
-
-          {/* Bottom Footer */}
-          <div className="mt-5 opacity-75" style={{ zIndex: 2 }}>
-            <small>© 2026 Blood Alert System. All rights reserved.</small>
-          </div>
-        </div>
-
-        {/* Right Form Column */}
-        <div className="col-md-6 d-flex align-items-center justify-content-center p-4 p-md-5 bg-white">
-          <div className="w-100" style={{ maxWidth: '420px' }}>
-            {/* Mobile Header - Visible only on mobile */}
-            <div className="d-md-none text-center mb-4">
-              <div className="bg-danger rounded-circle p-3 d-inline-flex align-items-center justify-content-center mb-3 shadow" style={{ width: '70px', height: '70px' }}>
-                <i className="bi bi-heart-pulse-fill text-white fs-2"></i>
+            <div className="my-auto position-relative" style={{ maxWidth: '460px' }}>
+              <span className="badge bg-white bg-opacity-15 rounded-pill px-3 py-2 mb-4">Every donor matters</span>
+              <h1 className="display-5 fw-bold mb-3">Be there when your community needs you.</h1>
+              <p className="lead opacity-75 mb-4">Receive urgent blood alerts, respond quickly, and make a real difference.</p>
+              <div className="d-flex gap-4 pt-2">
+                <div><i className="bi bi-bell-fill fs-5 d-block mb-2"></i><small>Urgent alerts</small></div>
+                <div><i className="bi bi-heart-pulse-fill fs-5 d-block mb-2"></i><small>Real impact</small></div>
+                <div><i className="bi bi-shield-check fs-5 d-block mb-2"></i><small>Secure account</small></div>
               </div>
-              <h2 className="fw-bold text-dark mb-1">Blood Alert</h2>
-              <p className="text-muted mb-0">Blood Request Alerting System</p>
             </div>
-
-            <div className="mb-4 d-none d-md-block">
-              <h2 className="fw-bold text-dark mb-1">Welcome Back</h2>
-              <p className="text-muted mb-0">Sign in to continue.</p>
+            <div className="position-relative mt-4 text-center">
+              <img src="/images/blood-donation-reset-illustration.png" alt="Blood donor and healthcare worker" className="img-fluid rounded-4 shadow" style={{ maxHeight: '245px', objectFit: 'cover', objectPosition: 'center 40%' }} />
             </div>
+            <small className="opacity-75 mt-4 position-relative">Blood Request Alerting System</small>
+          </section>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="mt-2">
-              {/* Email Field */}
-              <div className="form-group mb-4">
-                <label className="form-label text-secondary fw-semibold mb-2">
-                  <i className="bi bi-envelope me-2 text-danger"></i>
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  className={`form-control form-control-lg border-2 ${errors.email ? 'is-invalid' : ''}`}
-                  style={{ borderRadius: '10px', fontSize: '1rem', transition: 'all 0.2s' }}
-                  placeholder="name@example.com"
-                  {...register('email', {
-                    required: 'Email is required',
-                    pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: 'Invalid email address'
-                    }
-                  })}
-                />
-                {errors.email && (
-                  <div className="invalid-feedback">
-                    {errors.email.message}
+          <section className="col-lg-7 d-flex align-items-center justify-content-center p-4 p-md-5 bg-white">
+            <div className="w-100" style={{ maxWidth: '450px' }}>
+              <div className="d-lg-none text-center mb-4">
+                <span className="bg-danger text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{ width: 56, height: 56 }}>
+                  <i className="bi bi-heart-pulse-fill fs-3"></i>
+                </span>
+                <h1 className="h3 fw-bold mb-1">Blood Alert</h1>
+                <p className="text-muted mb-0">Blood Request Alerting System</p>
+              </div>
+
+              <div className="mb-5">
+                <p className="text-danger fw-semibold small text-uppercase mb-2">Welcome back</p>
+                <h2 className="h2 fw-bold text-dark mb-2">Sign in to your account</h2>
+                <p className="text-muted mb-0">Use your registered email address to continue.</p>
+              </div>
+
+              <form onSubmit={handleSubmit(onSubmit)} noValidate>
+                <div className="mb-3">
+                  <label htmlFor="email" className="form-label fw-semibold">Email address</label>
+                  <div className="input-group">
+                    <span className="input-group-text bg-white text-danger border-end-0"><i className="bi bi-envelope"></i></span>
+                    <input
+                      id="email"
+                      type="email"
+                      className={`form-control form-control-lg border-start-0 ${errors.email ? 'is-invalid' : ''}`}
+                      placeholder="name@example.com"
+                      {...register('email', { required: 'Email is required', pattern: { value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i, message: 'Enter a valid email address' } })}
+                    />
+                    {errors.email && <div className="invalid-feedback">{errors.email.message}</div>}
                   </div>
-                )}
-              </div>
-
-              {/* Password Field */}
-              <div className="form-group mb-4">
-                <div className="d-flex justify-content-between mb-2">
-                  <label className="form-label text-secondary fw-semibold mb-0">
-                    <i className="bi bi-lock me-2 text-danger"></i>
-                    Password
-                  </label>
-                  <Link to="/forgot-password" className="small text-decoration-none text-danger fw-semibold">
-                    Forgot Password?
-                  </Link>
                 </div>
-                <div className="input-group">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    className={`form-control form-control-lg border-2 ${errors.password ? 'is-invalid' : ''}`}
-                    style={{ borderRadius: '10px 0 0 10px', fontSize: '1rem', borderRight: '0' }}
-                    placeholder="••••••••"
-                    {...register('password', {
-                      required: 'Password is required',
-                      minLength: {
-                        value: 6,
-                        message: 'Password must be at least 6 characters'
-                      }
-                    })}
-                  />
-                  <button
-                    type="button"
-                    className="btn btn-outline-secondary border-2 px-3"
-                    style={{ borderRadius: '0 10px 10px 0' }}
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    <i className={`bi bi-eye${showPassword ? '-slash' : ''}`}></i>
-                  </button>
-                  {errors.password && (
-                    <div className="invalid-feedback">
-                      {errors.password.message}
-                    </div>
-                  )}
+
+                <div className="mb-2">
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <label htmlFor="password" className="form-label fw-semibold mb-0">Password</label>
+                    <Link to="/forgot-password" className="small text-danger fw-semibold text-decoration-none">Forgot password?</Link>
+                  </div>
+                  <div className="input-group">
+                    <span className="input-group-text bg-white text-danger border-end-0"><i className="bi bi-lock"></i></span>
+                    <input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      className={`form-control form-control-lg border-start-0 border-end-0 ${errors.password ? 'is-invalid' : ''}`}
+                      placeholder="Enter your password"
+                      {...register('password', { required: 'Password is required' })}
+                    />
+                    <button type="button" className="btn btn-outline-secondary border-start-0" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? 'Hide password' : 'Show password'}>
+                      <i className={`bi bi-eye${showPassword ? '-slash' : ''}`}></i>
+                    </button>
+                    {errors.password && <div className="invalid-feedback d-block">{errors.password.message}</div>}
+                  </div>
                 </div>
-              </div>
 
-              {/* Remember Me */}
-              <div className="form-check mb-4 d-flex align-items-center">
-                <input
-                  className="form-check-input me-2"
-                  type="checkbox"
-                  id="rememberMe"
-                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-                  {...register('rememberMe')}
-                />
-                <label className="form-check-label text-secondary" htmlFor="rememberMe" style={{ cursor: 'pointer', userSelect: 'none' }}>
-                  Keep me signed in
-                </label>
-              </div>
+                <div className="form-check my-4">
+                  <input className="form-check-input" type="checkbox" id="rememberMe" {...register('rememberMe')} />
+                  <label className="form-check-label text-muted" htmlFor="rememberMe">Keep me signed in</label>
+                </div>
 
-              {/* Login Button */}
-              <button
-                type="submit"
-                className="btn btn-danger btn-lg w-100 py-3 fw-bold mb-4"
-                style={{ borderRadius: '10px', transition: 'all 0.2s', boxShadow: '0 4px 15px rgba(220, 53, 69, 0.2)' }}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                    Signing In...
-                  </>
-                ) : (
-                  <>
-                    <i className="bi bi-box-arrow-in-right me-2"></i>
-                    Sign In
-                  </>
-                )}
-              </button>
+                <button type="submit" className="btn btn-danger btn-lg w-100 py-3 fw-bold" disabled={isLoading}>
+                  {isLoading ? <><span className="spinner-border spinner-border-sm me-2" role="status"></span>Signing in...</> : <><i className="bi bi-box-arrow-in-right me-2"></i>Sign in</>}
+                </button>
+              </form>
 
-              {/* Register Link */}
-              <div className="text-center">
-                <span className="text-secondary">Don't have an account? </span>
-                <Link
-                  to="/register"
-                  className="text-decoration-none text-danger fw-bold ms-1"
-                >
-                  Register here
-                </Link>
-              </div>
-            </form>
-          </div>
-        </div>
+              <p className="text-center text-muted mt-4 mb-0">New here? <Link to="/register" className="text-danger fw-bold text-decoration-none">Create an account</Link></p>
+            </div>
+          </section>
       </div>
-    </div>
+    </main>
   );
 };
 

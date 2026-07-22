@@ -53,16 +53,17 @@ const Navigation = () => {
     <>
       <Navbar bg="light" expand="lg" sticky="top" className="shadow-sm">
         <Container>
-          <span className="fw-bold h4 mb-0" style={{ color: '#dc3545', pointerEvents: 'none', userSelect: 'none' }}>
+          <Navbar.Brand as={Link} to="/home" className="fw-bold d-flex align-items-center gap-2 mb-0" style={{ color: '#b91c1c' }}>
+            <i className="bi bi-heart-pulse-fill"></i>
             Blood Alert
-          </span>
+          </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="ms-auto">
             <Nav.Link as={Link} to="/home" active={location.pathname === "/home"}>Home</Nav.Link>
             <Nav.Link as={Link} to="/donate-blood" active={location.pathname === "/donate-blood"} className="text-danger">Donate Blood</Nav.Link>
             <Nav.Link as={Link} to="/request" active={location.pathname === "/request"} className="text-danger">Request Blood</Nav.Link>
-            <Nav.Link as={Link} to="/about" active={location.pathname === "/about" || location.pathname === "/contact"}>About Us</Nav.Link>
+            <Nav.Link as={Link} to="/about" active={location.pathname === "/about" || location.pathname === "/contact"}>About</Nav.Link>
             
             {/* Conditional Login/Profile Button */}
             {isAuthenticated ? (

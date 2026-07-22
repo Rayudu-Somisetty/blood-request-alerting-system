@@ -118,7 +118,7 @@ const Register = () => {
 
       toast.success('Email verified! Registration complete 🎉');
       reset();
-      navigate('/user/dashboard');
+      navigate('/home');
     } catch (error) {
       console.error('Email verification check error:', error);
       toast.error(error.message || 'Failed to check verification status. Please try again.');

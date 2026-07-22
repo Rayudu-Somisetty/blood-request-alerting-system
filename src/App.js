@@ -79,7 +79,7 @@ const ProtectedRoute = ({ children }) => {
   
   // Check if user is admin using AdminPermissions utility
   if (!AdminPermissions.isAdmin(user)) {
-    return <Navigate to="/user/dashboard" replace />;
+    return <Navigate to="/home" replace />;
   }
   
   return children;
@@ -102,7 +102,7 @@ const PublicRoute = ({ children }) => {
     if (AdminPermissions.isAdmin(user)) {
       return <Navigate to="/admin/dashboard" replace />;
     } else {
-      return <Navigate to="/user/dashboard" replace />;
+      return <Navigate to="/home" replace />;
     }
   }
   
@@ -122,8 +122,7 @@ const LandingRoute = ({ children }) => {
     return <Navigate to="/admin/dashboard" replace />;
   }
   
-  // Regular users go to profile (consolidated dashboard)
-  return <Navigate to="/profile" replace />;
+  return <Navigate to="/home" replace />;
 };
 
 // Main Website Page Components - All require authentication
@@ -178,8 +177,7 @@ function App() {
             <Route path="/contact" element={<AuthenticatedRoute><AboutContactPage /></AuthenticatedRoute>} />
             <Route path="/donate-blood" element={<AuthenticatedRoute><DonateBloodPage /></AuthenticatedRoute>} />
             <Route path="/request" element={<AuthenticatedRoute><RequestPage /></AuthenticatedRoute>} />
-            {/* Redirect dashboard to profile (consolidated) */}
-            <Route path="/dashboard" element={<Navigate to="/profile" replace />} />
+            <Route path="/dashboard" element={<Navigate to="/home" replace />} />
             
             {/* Unified Login Route */}
             <Route 
@@ -255,7 +253,7 @@ function App() {
             <Route path="/admin/*" element={<Navigate to="/admin/dashboard" replace />} />
             
             {/* Legacy routes redirect */}
-            <Route path="/user/dashboard" element={<Navigate to="/profile" replace />} />
+            <Route path="/user/dashboard" element={<Navigate to="/home" replace />} />
           </Routes>
           
           {/* Toast Notifications */}
