@@ -36,7 +36,6 @@ const Login = () => {
   };
 
   return (
-  return (
     <div className="min-vh-100 d-flex align-items-stretch" style={{ background: '#f4f6f9' }}>
       <div className="row g-0 w-100">
         {/* Left Visual Column - Hidden on mobile, visible on desktop (md and up) */}
